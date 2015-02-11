@@ -1,6 +1,8 @@
 import XMonad hiding ( (|||) )
+import qualified XMonad as X
 import Data.List (find)
 import Data.Map 
+import qualified Data.Map as M
 import Data.Text (strip, pack, unpack)
 import System.Exit
 import XMonad.Hooks.EwmhDesktops
@@ -37,7 +39,7 @@ import Graphics.X11.ExtraTypes
 import XMonad.Actions.DynamicWorkspaces
 import XMonad.Prompt
 import XMonad.Prompt.Window
-import XMonad.Actions.CopyWindow(copy)
+import XMonad.Actions.CopyWindow(copy, copyWindow, kill1)
 
 --import XMonad.Actions.CopyWindow(copy)
 
@@ -198,17 +200,35 @@ gotoWorkspace w = do s <- gets windowset
 {-viewShift = doF . liftM2 (.) W.view W.shift-}
 -- | Calls dmenuMap to grab the appropriate Window, and hands it off to action
 --   if found.
-{-actionMenu :: String -> [String] -> (Window -> XMonad.WindowSet -> XMonad.WindowSet) -> X ()-}
-{-actionMenu menuCmd menuArgs action = windowMap >>= menuMapFunction >>= flip XMonad.whenJust (windows . action)-}
-    {-where-}
-      {-menuMapFunction :: Map String a -> X (Maybe a)-}
-      {-menuMapFunction selectionMap = menuMapArgs menuCmd menuArgs selectionMap-}
 
 {-whenX a f = a >>= \b -> b f-}
 
 myTerm = "~/bin/my-term"
 -- TODO: how to turn this into a string
 -- home = getEnv
+
+-- Copied from WindowBringer module because I needed to make my own for bringing windows as copies
+-- | Calls dmenuMap to grab the appropriate Window, and hands it off to action
+--   if found.
+actionMenu :: String -> [String] -> (Window -> X.WindowSet -> X.WindowSet) -> X ()
+actionMenu menuCmd menuArgs action = windowMap >>= menuMapFunction >>= flip X.whenJust (windows . action)
+    where
+      menuMapFunction :: M.Map String a -> X (Maybe a)
+      menuMapFunction selectionMap = menuMapArgs menuCmd menuArgs selectionMap
+
+copyWindowToCurrentWS w ws = copyWindow w (W.currentTag ws) ws
+
+copyMenuArgs' :: String -> [String] -> X ()
+copyMenuArgs' menuCmd menuArgs = actionMenu menuCmd menuArgs copyWindowToCurrentWS
+
+
+{-
+ --- | Pops open a dmenu with window titles. Choose one, and it will be
+ ---   dragged, kicking and screaming, into your current workspace. This version
+ ---   takes a list of arguments to pass to dmenu.
+ -bringMenuArgs' :: String -> [String] -> X ()
+ -bringMenuArgs' menuCmd menuArgs = actionMenu menuCmd menuArgs bringWindow
+ -}
 
 main = do handle <- spawnPipe myBar
           xmonad $ ewmh defaultConfig
@@ -238,7 +258,8 @@ main = do handle <- spawnPipe myBar
             , ("M-i", shiftTo Prev (WSIs $ return (((get_ws "5") ==) . tag)))
             , ("M-S-.", sendMessage (IncMasterN 1))
             , ("M-S-c", spawn "xmonad --recompile; xmonad --restart")
-            , ("M-q", kill)
+            , ("M-q", kill1)
+            , ("M-S-q", kill1)
             , ("M-c", spawn "dclip copy")
             , ("M-v", spawn "dclip paste")
             , ("M-S-l", spawn "xscreensaver-command --lock")
@@ -271,6 +292,7 @@ main = do handle <- spawnPipe myBar
             , ((myMod .|. shiftMask, xK_slash), withFocused $ windows . W.sink)
             , ((myMod, xK_n), removeEmptyWorkspaceAfter $ gotoMenuArgs' "my_dmenu" ["-b"])
             , ((myMod .|. shiftMask, xK_n), bringMenuArgs' "my_dmenu" ["-b"])
+            , ((myMod .|. shiftMask .|. controlMask, xK_n), copyMenuArgs' "my_dmenu" ["-b"])
             , ((myMod, xK_space), spawn "dmenu_run -i -p Run -fn 'Sazanami Mincho':pixelsize=10")
             --, ((myMod, xK_space), spawn "launcher")
             , ((myMod, xK_Down), BW.focusDown)
