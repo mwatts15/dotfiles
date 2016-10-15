@@ -1,0 +1,59 @@
+use Data::Dumper;
+use POSIX qw(mkfifo);
+use Fcntl ();
+use IO::Handle ();
+
+sub on_init {
+   my ($self) = @_;
+
+   my $output = `dynamic-colors init`;
+   $self->cmd_parse($output);
+}
+
+sub on_start {
+
+   my $fifo_name = "$ENV{HOME}/.last_dynamic_colors";
+   my ($self) = @_;
+
+   my $fh;
+   # XXX: HACK: I couldn't think of any other way to communicate between 
+   # instances of this script
+   if (-e $fifo_name)
+   {
+       (-p $fifo_name) or die "$fifo_name is not a pipe";
+   }
+   else
+   {
+       mkfifo($fifo_name, 0700) or die "Couldn't make fifo";
+   }
+   open $fh, "+<", "$fifo_name" or die "Couldn't open fifo";
+   fcntl $fh, &Fcntl::F_SETFL, &Fcntl::O_NONBLOCK;
+   $fh->autoflush(1);
+   $self->{flag} = $fh;
+   $self->{iow} = urxvt::iow
+                    ->new
+                    ->fd (fileno $fh)
+                    ->events (urxvt::EV_READ)
+                    ->start
+                    ->cb (sub {
+                        my $output = `dynamic-colors init`;
+                        $self->cmd_parse($output);
+                        my $c;
+                        sysread $self->{flag}, $c, 1;
+                    });
+
+   ()
+}
+
+sub on_user_command {
+    my ($self, $cmd) = @_;
+    if ($cmd eq "urxvt-colors")
+    {
+        my $output = `dynamic-colors cycle`;
+        $self->cmd_parse($output);
+        my $fh = $self->{flag};
+        print $fh "\n";
+        flush $fh;
+    }
+    ()
+}
