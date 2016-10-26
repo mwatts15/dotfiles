@@ -3,7 +3,6 @@ import qualified XMonad as X
 import Data.List (find)
 import Data.Map 
 import qualified Data.Map as M
-import Data.Text (strip, pack, unpack)
 import System.Exit
 import XMonad.Hooks.EwmhDesktops
 import XMonad.Layout.NoBorders
@@ -18,6 +17,7 @@ import XMonad.Layout.SubLayouts
 import XMonad.Layout.BoringWindows as BW hiding (focusMaster)
 import XMonad.Layout.Tabbed
 import XMonad.Actions.WindowBringer
+{-import Main.WindowBringer-}
 --import XMonad.Layout.SimpleDecoration
 
 import XMonad.Layout.WindowNavigation
@@ -39,9 +39,7 @@ import Graphics.X11.ExtraTypes
 import XMonad.Actions.DynamicWorkspaces
 import XMonad.Prompt
 import XMonad.Prompt.Window
-import XMonad.Actions.CopyWindow(copy, copyWindow, kill1)
-
---import XMonad.Actions.CopyWindow(copy)
+import XMonad.Actions.CopyWindow(copyWindow, kill1)
 
 import System.IO
 
@@ -164,12 +162,11 @@ myDecoTheme = defaultTheme { activeColor         = "#002b36"
 , inactiveBorderColor = "#002b36"
 , activeTextColor     = "#268bd2"
 , inactiveTextColor   = "gray50"
-, fontName            = "xft:Sazanami Mincho:size=9"
+, fontName            = "xft:Noto Sans Mono CJK JP Regular:pixelsize=10"
 , decoHeight          = 16
 } 
 myTab = tabbed shrinkText myDecoTheme
 myLayout = (avoidStruts . smartBorders) $ 
-           onWorkspace (get_ws "5") (Dishes 2 (1/9) ||| Circle ||| spiral (6/7) ||| Accordion ||| tall) $
            (tall ||| tp ||| myTab)
            where tall = (Tall 1 step ratio)
                  tp = (TwoPane step ratio)
@@ -185,8 +182,6 @@ myLayout = (avoidStruts . smartBorders) $
 -- | bind the result of dmenu and run the action on the result
 
 {-get_ws_by_dmenu :: [String] -> X ()-}
-stringStrip :: String -> String
-stringStrip s = (unpack . strip . pack) s
 dmenuDo :: Map String a -> a -> (a -> X()) -> X()
 dmenuDo choices d action = (dmenuMap choices) >>=
     \choice -> case choice of
@@ -222,14 +217,6 @@ copyMenuArgs' :: String -> [String] -> X ()
 copyMenuArgs' menuCmd menuArgs = actionMenu menuCmd menuArgs copyWindowToCurrentWS
 
 
-{-
- --- | Pops open a dmenu with window titles. Choose one, and it will be
- ---   dragged, kicking and screaming, into your current workspace. This version
- ---   takes a list of arguments to pass to dmenu.
- -bringMenuArgs' :: String -> [String] -> X ()
- -bringMenuArgs' menuCmd menuArgs = actionMenu menuCmd menuArgs bringWindow
- -}
-
 main = do handle <- spawnPipe myBar
           xmonad $ ewmh defaultConfig
             { workspaces = myWorkspaces
@@ -241,6 +228,7 @@ main = do handle <- spawnPipe myBar
             , terminal = myTerm
             , layoutHook = myLayout
             , logHook = myLogHook handle
+            , handleEventHook = handleEventHook defaultConfig <+> fullscreenEventHook
             }
             `additionalKeysP`
             ([("<XF86AudioNext>", spawn "xmms2 next")
@@ -250,20 +238,23 @@ main = do handle <- spawnPipe myBar
             , ("<XF86TouchpadToggle>", spawn "~/bin/mouse_toggle.sh")
             , ("C-S-<Up>", spawn "amixer -q set Master unmute;amixer -q set Master 5%+;~/bin/xmobar_vol.sh Master")
             , ("C-S-<Down>", spawn "amixer -q set Master unmute;amixer -q set Master 5%-;~/bin/xmobar_vol.sh Master")
-            , ("<XF86AudioMute>", spawn "amixer -q set Master toggle;~/bin/xmobar_vol.sh Master")
+            {-, ("<XF86AudioMute>", spawn "amixer -q set Master toggle;~/bin/xmobar_vol.sh Master")-}
+            -- Pulse mutes three controls, so it's necessary to unmute each individually
+            , ("<XF86AudioMute>", spawn "audio-toggle.sh; ~/bin/xmobar_vol.sh Master")
             , ("M-m", windows swap_win)
             , ("M-S-m", windows bury_win)
             , ("M-y", sendMessage $ JumpToLayout "Tabbed Simplest")
             , ("M-p", sendMessage $ NextLayout)
             , ("M-i", shiftTo Prev (WSIs $ return (((get_ws "5") ==) . tag)))
             , ("M-S-.", sendMessage (IncMasterN 1))
-            , ("M-S-c", spawn "xmonad --recompile; xmonad --restart")
+            , ("M-S-c", spawn "xmonad --recompile && xmonad --restart")
             , ("M-q", kill1)
             , ("M-S-q", kill1)
             , ("M-c", spawn "dclip copy")
             , ("M-v", spawn "dclip paste")
             , ("M-S-l", spawn "xscreensaver-command --lock")
             , ("C-S-k", spawn "dmenu_man")
+            , ("M-S-t", spawn "dict-lookup-selected")
             , ("C-S-r", spawn "wifi-connect.sh")
             ]
             ++
@@ -275,7 +266,7 @@ main = do handle <- spawnPipe myBar
             , ((0, xK_Print), spawn "scrot \'/home/markw/pictures/scrots/%Y%m%d%H%M%S_scrot-$wx$h.png\'")
             , ((controlMask .|. mod1Mask, xK_1), spawn "setxkbmap us -variant dvorak")
             , ((mod1Mask .|. controlMask, xK_2), spawn "setxkbmap us")
-            , ((myMod, xK_d), spawn "surf")
+            , ((myMod, xK_d), spawn "todo")
             , ((myMod .|. shiftMask, xK_z), io $ exitWith ExitSuccess)
             --, ((myMod .|. controlMask, xK_h), sendMessage $ pullGroup L)
             --, ((myMod .|. controlMask, xK_l), sendMessage $ pullGroup R)
@@ -293,7 +284,7 @@ main = do handle <- spawnPipe myBar
             , ((myMod, xK_n), removeEmptyWorkspaceAfter $ gotoMenuArgs' "my_dmenu" ["-b"])
             , ((myMod .|. shiftMask, xK_n), bringMenuArgs' "my_dmenu" ["-b"])
             , ((myMod .|. shiftMask .|. controlMask, xK_n), copyMenuArgs' "my_dmenu" ["-b"])
-            , ((myMod, xK_space), spawn "dmenu_run -i -p Run -fn 'Sazanami Mincho':pixelsize=10")
+            , ((myMod, xK_space), spawn "dmenu_run_plus -i -p Run -fn 'Noto Sans Mono CJK JP Regular':pixelsize=10 -lh 19")
             --, ((myMod, xK_space), spawn "launcher")
             , ((myMod, xK_Down), BW.focusDown)
             , ((myMod, xK_Up), BW.focusUp)
