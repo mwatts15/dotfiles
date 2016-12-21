@@ -7,28 +7,30 @@ set nocompatible
 
      " let Vundle manage Vundle
      " required! 
-     Bundle 'gmarik/vundle'
+     Plugin 'gmarik/vundle'
 
      " My Bundles here:
      "
      " original repos on github
-     Bundle 'tpope/vim-fugitive'
-     Bundle 'scrooloose/syntastic'
-     Bundle 'scrooloose/nerdcommenter'
-     Bundle 'scrooloose/nerdtree'
+     Plugin 'tpope/vim-fugitive'
+     Plugin 'scrooloose/syntastic'
+     Plugin 'scrooloose/nerdcommenter'
+     Plugin 'scrooloose/nerdtree'
 
-     Bundle 'Lokaltog/vim-easymotion'
-     Bundle 'Lokaltog/vim-powerline'
+     Plugin 'Lokaltog/vim-easymotion'
+     Plugin 'powerline/powerline', {'rtp': 'powerline/bindings/vim/'}
      
-     Bundle 'altercation/vim-colors-solarized'
-     Bundle 'spf13/vim-colors'
-     Bundle 'flazz/vim-colorschemes'
+     Plugin 'altercation/vim-colors-solarized'
+     Plugin 'spf13/vim-colors'
+     "Plugin 'flazz/vim-colorschemes'
 
-     Bundle 'tpope/vim-surround'
-     "Bundle 'Valloric/YouCompleteMe'
-     Bundle 'plasticboy/vim-markdown'
-     Bundle 'MultipleSearch'
-     Bundle 'msanders/snipmate.vim'
+     Plugin 'tpope/vim-surround'
+     Plugin 'Valloric/YouCompleteMe'
+     Plugin 'plasticboy/vim-markdown'
+     Plugin 'MultipleSearch', {'pinned': 1}
+     Plugin 'terryma/vim-multiple-cursors'
+     Plugin 'tfnico/vim-gradle'
+     "Plugin 'msanders/snipmate.vim'
 
      filetype plugin indent on     " required!
      "
@@ -46,6 +48,8 @@ if &term == 'xterm' || &term == 'screen-bce'
     set t_Co=256                 " Enable 256 colors to stop the CSApprox warning and make xterm vim shine
 endif
 scriptencoding utf-8
+set modelines=0
+set nomodeline
 set tabstop=4
 set nowrap
 set shiftwidth=4
@@ -83,7 +87,7 @@ set grepprg=grep\ -nH\ $*\ /dev/null
 let g:solarized_termtrans=0
 let g:solarized_contrast="normal"
 let g:solarized_visibility="normal"
-let g:solarized_termcolors=128
+"let g:solarized_termcolors=128
 let g:tex_flavor='latex'
 colorscheme solarized
 
@@ -92,10 +96,21 @@ let g:EasyMotion_keys = '123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQ'
 
 let g:ycm_autoclose_preview_window_after_insertion = 1
 let g:ycm_filetype_specific_completion_to_disable = ["lisp", "racket", "scheme"]
+
 let g:syntastic_c_check_header = 1
 let g:syntastic_c_config_file = '.syntastic_c_config'
+let g:syntastic_java_javac_config_file = '.syntastic_javac_config'
+let g:syntastic_java_javac_autoload_maven_classpath = 1
+let g:syntastic_always_populate_loc_list = 1
+let g:syntastic_auto_loc_list = 0
+let g:syntastic_check_on_open = 0
+let g:syntastic_check_on_wq = 0
+
+" From snipMate
+let g:SuperTabMappingForward = "<tab>"
 
 let NERDTreeIgnore=['\.o$', '\.sw[a-z]$', '\.hi$']
+let g:NERDTreeMapHelp=""
 
 set linebreak
 set display+=lastline
@@ -109,6 +124,9 @@ nmap <down> gj
 nnoremap j gj
 nnoremap k gk
 nnoremap Y y$
+
+inoremap <C-_> </<C-X><C-O>
+
 "call togglebg#map("<F5>")
 vmap <up> gk
 vmap <down> gj
@@ -121,12 +139,12 @@ nmap . .`[
 vnoremap <silent> . :normal .<CR>
 inoremap { {}<Left>
 inoremap {<Right> {
-inoremap {<CR>  {<CR>}<Esc>O
+inoremap <expr> {<CR>  strpart(getline('.'), col('.') - 1, 1) =~ '[^ ]' ? "{\<CR>": "{<CR>}<Esc>O"
 inoremap {} {}
 nmap zO zR
 "map <A-]> :vsp <CR>:exec("tag ".expand("<cword>"))<CR>
 inoremap <expr> }  strpart(getline('.'), col('.')-1, 1) == "}" ? "\<Right>" : "}"
-inoremap <expr> {  strpart(getline('.'), col('.')-1, 1) == "}" ? "\<Left>" :"{"
+inoremap <expr> {  strpart(getline('.'), col('.')-1, 1) == "}" ? "{\<Left>" :"{"
 
 nmap <C-J> <C-W>j<C-W>_
 nmap <C-K> <C-W>k<C-W>_
@@ -177,11 +195,16 @@ if has('statusline')
     set laststatus=2
 
     " Broken down into easily includeable segments
-    set statusline=%<%f\    " Filename
+    "set statusline=%<%f\    " Filename
     set statusline+=%w%h%m%r " Options
     set statusline+=%{fugitive#statusline()} "  Git Hotness
     set statusline+=\ [%{&ff}/%Y]            " filetype
-    set statusline+=\ [%{getcwd()}]          " current dir
+    "set statusline+=\ [%{getcwd()}]          " current dir
+
+    set statusline+=%#warningmsg#
+    set statusline+=%{SyntasticStatuslineFlag()}
+    set statusline+=%*
+
     set statusline+=%=%-14.(%l,%c%V%)\ %p%%  " Right aligned file nav info
 endif
 
@@ -193,7 +216,7 @@ function! SuperCleverTab()
     " on
     let mystr = strpart(getline('.'), col('.') - 2 , 1)
     if (mystr =~ '\s' || mystr == "")
-         return "\<Tab>"
+        return "\<Tab>"
     else
         return "\<C-N>"
     endif
@@ -202,11 +225,13 @@ endfunction
 set pastetoggle=<F12>           " pastetoggle (sane indentation on pastes)
 
 " Remove trailing whitespaces and ^M chars
-autocmd FileType c,cpp,java,php,javascript,python,twig,xml,yml autocmd BufWritePre <buffer> :call setline(1,map(getline(1,"$"),'substitute(v:val,"\\s\\+$","","")'))
-autocmd! BufWritePost *.rst silent ! rst2html <afile> 2>/dev/null > rst_out.html
+autocmd FileType c,cpp,java,php,javascript,ruby,python,twig,xml,yml,groovy autocmd BufWritePre <buffer> :call setline(1,map(getline(1,"$"),'substitute(v:val,"\\s\\+$","","")'))
 
-inoremap <Tab> <C-R>=SuperCleverTab()<cr>
-inoremap <S-Tab> <C-P>
+autocmd! BufWritePost *.rst silent ! rst2html <afile> 2>/dev/null > rst_out.html
+autocmd FileType rst,markdown set spell
+
+imap <Tab> <C-R>=SuperCleverTab()<cr>
+"inoremap <S-Tab> <C-P>
 
 nnoremap <silent> <buffer> <Plug>SexpCloseParenthesis  :call SlimvCloseForm()<CR>
 "-------------------------------------------------------------------
