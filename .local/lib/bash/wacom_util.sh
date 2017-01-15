@@ -39,3 +39,9 @@ on_wacom_status_change () {
         exit 3
     fi
 }
+
+wacom_get_device_id () {
+    X=$1
+    die_if_program_doesnt_exist xsetwacom
+    echo -n $(xsetwacom --list devices | grep $X | cut -f 2 | cut -d' ' -f 2 | head -n 1)
+}
