@@ -34,7 +34,7 @@ import XMonad.Util.Themes
 import Control.Monad (liftM2,liftM)
 import XMonad.StackSet hiding (focus, workspaces)
 import qualified XMonad.StackSet as W
-import XMonad.Util.EZConfig(additionalKeys,additionalKeysP,removeKeys,removeKeysP)
+import XMonad.Util.EZConfig(additionalKeys,additionalKeysP,removeKeys,removeKeysP,additionalMouseBindings)
 import Graphics.X11.ExtraTypes
 import XMonad.Actions.DynamicWorkspaces
 import XMonad.Prompt
@@ -54,7 +54,8 @@ myWorkspaces = [[a] ++ ":" ++ b | (a, b) <- zip myNumbers myTags]
 get_ws x = [myNumbers !! k ] ++ ":" ++ (myTags !! k)
            where 
             k = (get_index x myOldTags)
-
+myScreens = [('\'', 0), (',', 1),
+             ('a',  2), ('o', 3)]
 {-
     This is my replacement for XMonadPrompt using dmenu
     It makes use of System.IO for working with handles 
@@ -234,12 +235,12 @@ main = do handle <- spawnPipe myBar
             ([("<XF86AudioNext>", spawn "xmms2 next")
             , ("<XF86AudioPrev>", spawn "xmms2 prev")
             , ("<XF86AudioPlay>", spawn "xmms2 toggle")
-            , ("M-s", spawn "~/bin/dxmms2")
+            , ("M-s", spawn "dxmms2")
             , ("<XF86TouchpadToggle>", spawn "~/bin/mouse_toggle.sh")
             , ("C-S-<Up>", spawn "amixer -q set Master unmute;amixer -q set Master 5%+;~/bin/xmobar_vol.sh Master")
             , ("C-S-<Down>", spawn "amixer -q set Master unmute;amixer -q set Master 5%-;~/bin/xmobar_vol.sh Master")
-            {-, ("<XF86AudioMute>", spawn "amixer -q set Master toggle;~/bin/xmobar_vol.sh Master")-}
-            -- Pulse mutes three controls, so it's necessary to unmute each individually
+            , ("<XF86AudioRaiseVolume>", spawn "amixer -q set Master unmute;amixer -q set Master 5%+;~/bin/xmobar_vol.sh Master")
+            , ("<XF86AudioLowerVolume>", spawn "amixer -q set Master unmute;amixer -q set Master 5%-;~/bin/xmobar_vol.sh Master")
             , ("<XF86AudioMute>", spawn "audio-toggle.sh; ~/bin/xmobar_vol.sh Master")
             , ("M-m", windows swap_win)
             , ("M-S-m", windows bury_win)
@@ -259,7 +260,7 @@ main = do handle <- spawnPipe myBar
             ]
             ++
             [("M-" ++ mod ++ [key], screenWorkspace screen >>= flip whenJust(windows . action))
-                | (key, screen) <- zip "a',o" [0..3], (mod, action) <- zip ["", "S-"] [W.view, liftM2 (.) W.view W.shift]])
+                | (key, screen) <- myScreens, (mod, action) <- zip ["", "S-"] [W.view, liftM2 (.) W.view W.shift]])
             `additionalKeys`
             ([ ((mod1Mask, xK_Print), spawn "scrot \'/home/markw/pictures/scrots/%Y%m%d%H%M%S_scrot-$wx$h.png\' -u")
             , ((mod1Mask .|. controlMask, xK_Print), spawn "scrot \'/home/markw/pictures/scrots/%Y%m%d%H%M%S_scrot-$wx$h.png\' -s")
@@ -302,6 +303,5 @@ main = do handle <- spawnPipe myBar
             zip (zip (repeat (myMod)) ([xK_1..xK_9]++[xK_0])) (Prelude.map (removeEmptyWorkspaceAfter . gotoWorkspace) myWorkspaces)
             ++
             zip (zip (repeat (myMod .|. shiftMask)) ([xK_1..xK_9]++[xK_0])) (Prelude.map (\ws -> (addHiddenWorkspace ws) >> (windows $ W.shift ws)) myWorkspaces))
-
             `removeKeysP`
             (["M-S-q", "M-Space"] ++ ["M-" ++ mod ++ [key] | key <- "wer", mod <- ["", "S-"]])
