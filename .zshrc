@@ -69,46 +69,22 @@ precmd()
         local UNSTAGED_CHANGES
         local STAGED_CHANGES
         local CHANGES
-        local ua
-        local ud
-        local sa
-        local sd
 
-        UNSTAGED_CHANGES=
-        STAGED_CHANGES=
-        ua=
-        ud=
-        git diff --numstat | while read a d _; do
-            ua=$((a + ua))
-            ud=$((d + ud))
-            UNSTAGED_CHANGES=1
-        done
+        UNSTAGED_CHANGES=0
+        STAGED_CHANGES=0
+        UNSTAGED_CHANGES=$(git diff --numstat | wc -l)
+        STAGED_CHANGES=$(git diff --numstat --staged | wc -l)
 
-        sa=
-        sd=
-        git diff --numstat --staged | while read a d _ ; do
-            sa=$((a + sa))
-            sd=$((d + sd))
-            STAGED_CHANGES=1
-        done
-        [ x$sa = x0 ] && sa=
-        [ x$sd = x0 ] && sd=
-        [ x$ua = x0 ] && ua=
-        [ x$ud = x0 ] && ud=
-        ua=${ua:+"%F{green}+$ua%f"}
-        ud=${ud:+"%F{red}-$ud%f"}
-        sa=${sa:+"%F{green}+$sa%f"}
-        sd=${sd:+"%F{red}-$sd%f"}
-        SC=${STAGED_CHANGES:+$sa$sd}
-        UC=${UNSTAGED_CHANGES:+$ua$ud}
-        if [ x$SC != x -a x$UC != x ] ; then
-            SC="$SC;"
+        CHANGES=
+        if [ $((STAGED_CHANGES + UNSTAGED_CHANGES)) -gt 0 ] ; then
+            CHANGES='|'
         fi
 
-        if [ $UC$SC ] ; then 
-            CHANGES="|$SC$UC"
-        else
-            CHANGES=
+        if [ $STAGED_CHANGES -ne 0 ] ; then 
+            CHANGES=$CHANGES●$STAGED_CHANGES
+        fi
+        if [ $UNSTAGED_CHANGES -ne 0 ] ; then 
+            CHANGES=$CHANGES✚$UNSTAGED_CHANGES
         fi
         prompt_vcs="${prompt_start}${vcs_info_msg_0_}$CHANGES${prompt_end}"
     else
