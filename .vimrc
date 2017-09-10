@@ -31,6 +31,7 @@ set nocompatible
      Plugin 'terryma/vim-multiple-cursors'
      Plugin 'tfnico/vim-gradle'
      "Plugin 'msanders/snipmate.vim'
+     Plugin 'elixir-lang/vim-elixir'
 
      filetype plugin indent on     " required!
      "
@@ -97,6 +98,7 @@ let g:EasyMotion_keys = '123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQ'
 let g:ycm_autoclose_preview_window_after_insertion = 1
 let g:ycm_filetype_specific_completion_to_disable = ["lisp", "racket", "scheme"]
 
+let g:syntastic_python_checkers = ["frosted", "flake8"]
 let g:syntastic_c_check_header = 1
 let g:syntastic_c_config_file = '.syntastic_c_config'
 let g:syntastic_java_javac_config_file = '.syntastic_javac_config'
@@ -193,19 +195,6 @@ let mapleader = ','
 
 if has('statusline')
     set laststatus=2
-
-    " Broken down into easily includeable segments
-    "set statusline=%<%f\    " Filename
-    set statusline+=%w%h%m%r " Options
-    set statusline+=%{fugitive#statusline()} "  Git Hotness
-    set statusline+=\ [%{&ff}/%Y]            " filetype
-    "set statusline+=\ [%{getcwd()}]          " current dir
-
-    set statusline+=%#warningmsg#
-    set statusline+=%{SyntasticStatuslineFlag()}
-    set statusline+=%*
-
-    set statusline+=%=%-14.(%l,%c%V%)\ %p%%  " Right aligned file nav info
 endif
 
 "functions
@@ -225,7 +214,7 @@ endfunction
 set pastetoggle=<F12>           " pastetoggle (sane indentation on pastes)
 
 " Remove trailing whitespaces and ^M chars
-autocmd FileType c,cpp,java,php,javascript,ruby,python,twig,xml,yml,groovy autocmd BufWritePre <buffer> :call setline(1,map(getline(1,"$"),'substitute(v:val,"\\s\\+$","","")'))
+autocmd FileType perl,c,cpp,java,php,javascript,ruby,python,twig,xml,yml,groovy autocmd BufWritePre <buffer> :call setline(1,map(getline(1,"$"),'substitute(v:val,"\\s\\+$","","")'))
 
 autocmd! BufWritePost *.rst silent ! rst2html <afile> 2>/dev/null > rst_out.html
 autocmd FileType rst,markdown set spell
