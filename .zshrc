@@ -133,22 +133,12 @@ preexec()
     esac
 }
 
-gocs ()
-{
-    if [ "${1}x" = "atolx" ] ; then
-        ssh rick@atol.csres.utexas.edu
-    else
-        ssh markw@$1.cs.utexas.edu
-    fi
-}
-
 #PS1="\${vcs_info_msg_0_}(%F{yellow}%n@%U%M%u%f)(%F{cyan}zsh:%L%f)(\$prompt_wd)
 #(%B%!%b)%# "
 PS1="\$prompt"
 RPROMPT="%(?.%T.%F{white}%K{black}%?%f%k)"
 
-[[ ! -f ${ZDOTDIR:-$HOME}/.zkbd/linux-unknown-linux-gnu ]] && zkbd
-source ${ZDOTDIR:-$HOME}/.zkbd/linux-unknown-linux-gnu
+source ~/.zkbd/$TERM-${${DISPLAY:t}:-$VENDOR-$OSTYPE}
 
 [[ -n ${key[Backspace]} ]] && bindkey "${key[Backspace]}" backward-delete-char
 [[ -n ${key[Insert]} ]] && bindkey "${key[Insert]}" overwrite-mode
@@ -165,39 +155,14 @@ bindkey "vv" vi-cmd-mode
 bindkey '^R' history-beginning-search-backward
 bindkey '^X^X' history-beginning-search-menu
 
+eval `/usr/bin/dircolors -b ~/.dircolors`
+
 # {{{ Aliases
 
-eval `/usr/bin/dircolors -b ~/.dircolors`
-alias bc='bc -il ~/.bc/*.bc'
-alias ren='mv -n'
-alias help=man
-alias cl='clisp -repl ~/.cl/*.cl'
-alias l='ls'
-alias ll='ls -l'
-alias ls='/bin/ls --group-directories-first --color=auto -F'
-alias rm="rm -I"
-alias go='cd'
-alias back='popd'
-alias xclip="xclip -sel clipboard"
-alias wicd-client="wicd-client -n"
-alias setcur='set_current_project'
-alias defp='define_project'
-alias lstp='list_projects'
-alias rmp='delete_project'
-alias xlock='xscreensaver-command --lock'
-alias grepl='grep --color=auto -n'
-alias e=$EDITOR
-alias kilall=killall
-alias ↑=up
-alias cd-='cd -'
-alias py=python
-alias ipy=ipython
-alias py3=python3
-alias ipy3=ipython3
-alias xsetkbmap=setxkbmap
-alias gah=cat
+if [ -f $HOME/.zsh_aliases ] ; then
+    . $HOME/.zsh_aliases
+fi
 
-alias ge='ssh markw@envy.cs.utexas.edu'
 alias v=vim
 which finger >/dev/null 2>&1
 if [ $? -ne 0 ] ; then
@@ -309,3 +274,4 @@ function ctd ()
 export CVS_RSH=ssh
 export LD_LIBRARY_PATH=/usr/local/lib:/usr/lib
 CDPATH=.:$HOME
+source "$HOME/.zshrc.local"
