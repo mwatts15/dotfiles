@@ -4,6 +4,7 @@ import Data.List (find)
 import Data.Map 
 import qualified Data.Map as M
 import System.Exit
+import qualified XMonad.Config.Desktop as DeskConf
 import XMonad.Hooks.EwmhDesktops
 import XMonad.Layout.NoBorders
 import XMonad.Layout.LayoutCombinators
@@ -16,7 +17,7 @@ import XMonad.Layout.TwoPane
 import XMonad.Layout.SubLayouts
 import XMonad.Layout.BoringWindows as BW hiding (focusMaster)
 import XMonad.Layout.Tabbed
-import XMonad.Actions.WindowBringer
+import XMonad.Actions.WindowBringer hiding (actionMenu)
 {-import Main.WindowBringer-}
 --import XMonad.Layout.SimpleDecoration
 
@@ -131,7 +132,7 @@ rotateWindows = modWindowStack listrotate
 rotateWindowsr = modWindowStack listrotater
 
 myLogHook h = dynamicLogWithPP (myPP h)
-              >> updatePointer (Relative 0.5 0.5)
+              >> updatePointer (0.5, 0.5) (0, 0)
 
 {--get_alt_win our_stack
         | focused == master = alt_win
@@ -157,15 +158,16 @@ bury (x:xs) = xs ++ [x]
 -- for modifying stack with list functions
 modify_stack f = W.differentiate . f . W.integrate
 bury_win = (W.modify Nothing $ modify_stack bury) . shiftMaster
-myDecoTheme = defaultTheme { activeColor         = "#002b36"
-, inactiveColor       = "#03151a"
-, activeBorderColor   = "#002b36"
-, inactiveBorderColor = "#002b36"
-, activeTextColor     = "#268bd2"
-, inactiveTextColor   = "gray50"
-, fontName            = "xft:Noto Sans Mono CJK JP Regular:pixelsize=10"
-, decoHeight          = 16
-} 
+myDecoTheme = def { activeColor         = "#002b36"
+                  , inactiveColor       = "#03151a"
+                  , activeBorderColor   = "#002b36"
+                  , inactiveBorderColor = "#002b36"
+                  , activeTextColor     = "#268bd2"
+                  , inactiveTextColor   = "gray50"
+                  , fontName            = "xft:Noto Sans Mono CJK JP Regular:pixelsize=10"
+                  , decoHeight          = 16
+                  } 
+
 myTab = tabbed shrinkText myDecoTheme
 myLayout = (avoidStruts . smartBorders) $ 
            (tall ||| tp ||| myTab)
@@ -219,17 +221,17 @@ copyMenuArgs' menuCmd menuArgs = actionMenu menuCmd menuArgs copyWindowToCurrent
 
 
 main = do handle <- spawnPipe myBar
-          xmonad $ ewmh defaultConfig
+          xmonad $ ewmh DeskConf.desktopConfig
             { workspaces = myWorkspaces
             , borderWidth = 3
             , focusedBorderColor = "#268bd2"
             , normalBorderColor = "#333333"
             , modMask = myMod -- Map to Windows key
-            , manageHook = manage_hook <+> manageHook defaultConfig
+            , manageHook = manage_hook <+> manageHook DeskConf.desktopConfig
             , terminal = myTerm
             , layoutHook = myLayout
             , logHook = myLogHook handle
-            , handleEventHook = handleEventHook defaultConfig <+> fullscreenEventHook
+            , handleEventHook = handleEventHook DeskConf.desktopConfig <+> fullscreenEventHook
             }
             `additionalKeysP`
             ([("<XF86AudioNext>", spawn "xmms2 next")
@@ -282,7 +284,7 @@ main = do handle <- spawnPipe myBar
             , ((myMod, xK_b), sendMessage $ ToggleStrut D)
             , ((myMod .|. shiftMask, xK_b), sendMessage ToggleStruts)
             , ((myMod .|. shiftMask, xK_slash), withFocused $ windows . W.sink)
-            , ((myMod, xK_n), removeEmptyWorkspaceAfter $ gotoMenuArgs' "my_dmenu" ["-b"])
+            , ((myMod, xK_n), gotoMenuArgs' "my_dmenu" ["-b"])
             , ((myMod .|. shiftMask, xK_n), bringMenuArgs' "my_dmenu" ["-b"])
             , ((myMod .|. shiftMask .|. controlMask, xK_n), copyMenuArgs' "my_dmenu" ["-b"])
             , ((myMod, xK_space), spawn "dmenu_run_plus -i -p Run -fn 'Noto Sans Mono CJK JP Regular':pixelsize=10 -lh 19")
@@ -297,10 +299,10 @@ main = do handle <- spawnPipe myBar
             , ((myMod,               xK_Left),    prevWS)
             , ((myMod .|. shiftMask, xK_Right), shiftToNext >> nextWS)
             , ((myMod .|. shiftMask, xK_Left),   shiftToPrev >> prevWS)
-            , ((myMod,               xK_x),     removeEmptyWorkspaceAfter toggleWS)
+            , ((myMod,               xK_x),     toggleWS)
             ] 
             ++ 
-            zip (zip (repeat (myMod)) ([xK_1..xK_9]++[xK_0])) (Prelude.map (removeEmptyWorkspaceAfter . gotoWorkspace) myWorkspaces)
+            zip (zip (repeat (myMod)) ([xK_1..xK_9]++[xK_0])) (Prelude.map gotoWorkspace myWorkspaces)
             ++
             zip (zip (repeat (myMod .|. shiftMask)) ([xK_1..xK_9]++[xK_0])) (Prelude.map (\ws -> (addHiddenWorkspace ws) >> (windows $ W.shift ws)) myWorkspaces))
             `removeKeysP`
