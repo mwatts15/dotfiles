@@ -24,7 +24,7 @@ compinit
 HISTFILE=~/.histfile
 HISTSIZE=4096
 SAVEHIST=4096
-setopt autocd extendedglob notify nohup
+setopt extendedglob notify nohup
 setopt appendhistory
 setopt auto_continue
 setopt hist_ignore_all_dups
@@ -274,4 +274,6 @@ function ctd ()
 export CVS_RSH=ssh
 export LD_LIBRARY_PATH=/usr/local/lib:/usr/lib
 CDPATH=.:$HOME
-source "$HOME/.zshrc.local"
+if [ -f "$HOME/.zshrc.local" ] ; then
+    source "$HOME/.zshrc.local"
+fi
