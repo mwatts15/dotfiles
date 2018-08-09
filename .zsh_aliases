@@ -29,11 +29,29 @@ alias xsetkbmap=setxkbmap
 alias gah=cat
 alias vexp='vex --path '
 alias gd='git diff'
+alias grd='git rebase dev'
+alias gsh='git show'
 alias gl='git log'
 alias gll='git logl'
+alias gf='git fetch'
+alias gm='git merge'
+alias ga='git add'
 gp ()
 {
     br=$(git rev-parse --abbrev-ref HEAD)
-    git push -u origin $br
+    git push -u origin $br "$@"
 }
 alias gst='git status'
+alias gc='git commit'
+alias gch='git checkout'
+alias gchb='git checkout -b'
+alias gcam='git commit -am'
+
+pt ()
+{
+    if [ "$*" ] ; then
+        python setup.py test --addopts "$*"
+    else
+        python setup.py test
+    fi
+}
