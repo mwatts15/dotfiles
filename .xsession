@@ -13,7 +13,7 @@ fi
 #export XMODIFIERS=@im=ibus
 #export QT_IM_MODULE=ibus
 
-MY_TERM=$HOME/bin/my-term
+MY_TERM=my-term
 
 #- X Server -
 xset b 0
@@ -37,10 +37,6 @@ fi
 #- Desktop -
 $HOME/.fehbg
 #xcompmgr -n -o .1 -f -O .027 -D 2 &
-/usr/bin/Xephyr -fullscreen :15 &
-DISPLAY=:15 xfwm4 &
-DISPLAY=:15 xfce4-panel &
-DISPLAY=:15 setxkbmap dvorak
 
 ##- Autostart Applications -
 ##firefox &
@@ -60,6 +56,6 @@ WMNAME=xmonad
 
 PATH=$PATH:$HOME/.cabal/bin
 #.config/xmobar/xmobarrc.pl
-~/bin/xmobar_vol.sh Master
-sleep 2 && xmobar .xmobarrc_ &
+(sleep 3 && battery_status.sh) &
+(sleep 2 && xmobar .xmobarrc_ && xmobar_vol.sh Master) &
 exec $WMNAME
