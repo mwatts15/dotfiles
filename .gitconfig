@@ -1,0 +1,23 @@
+[init]
+    templatedir = /home/markw/.git-template-dir
+[core]
+	excludesfile = /home/markw/.gitignore_global
+[user]
+	name = Mark Watts
+	email = watts.mark2015@gmail.com
+	signingkey = AB5093FD
+[color]
+	ui = auto
+[push]
+	default = simple
+[alias]
+    co = checkout
+    logl = log --branches --exclude="archive/*" --tags --remotes --decorate=short  --graph
+    archive = git tag archive
+	scommit = commit -S
+
+[url "git@github.com:openworm/"]
+    insteadOf = ow://
+
+[url "git@github.com:mwatts15/"]
+    insteadOf = mwatts15://
