@@ -138,7 +138,10 @@ preexec()
 PS1="\$prompt"
 RPROMPT="%(?.%T.%F{white}%K{black}%?%f%k)"
 
-source ~/.zkbd/$TERM-${${DISPLAY:t}:-$VENDOR-$OSTYPE}
+zkbdfile="~/.zkbd/$TERM-${${DISPLAY:t}:-$VENDOR-$OSTYPE}"
+if [ -f $zkbdfile ] ; then
+    source ~/.zkbd/$TERM-${${DISPLAY:t}:-$VENDOR-$OSTYPE}
+fi
 
 [[ -n ${key[Backspace]} ]] && bindkey "${key[Backspace]}" backward-delete-char
 [[ -n ${key[Insert]} ]] && bindkey "${key[Insert]}" overwrite-mode
