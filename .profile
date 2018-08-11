@@ -44,7 +44,7 @@ PATH="$HOME/.cabal/bin:$HOME/.local/bin:$PATH"
 export DXMMS2_FONT_WIDTH=10
 export DMENU_FONT="Noto Sans Mono CJK JP Regular"
 export PYTHONPATH=$HOME/.python
-export DYNAMIC_COLORS_ROOT=$HOME/bin/term-dynamic-colors
+export DYNAMIC_COLORS_ROOT=$HOME/.dynamic-colors
 export PERL5LIB=$HOME/.local/lib/perl:$HOME/.local/lib/perl5
 export PERLLIB=$PERL5LIB
 export PATH
