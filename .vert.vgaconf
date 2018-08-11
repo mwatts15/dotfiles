@@ -1,0 +1,16 @@
+SETUP() {
+    xrandr --delmode $EXTMON 1280x1024_60.00 2> /dev/null
+    xrandr --rmmode "1280x1024_60.00" 2> /dev/null
+    xrandr --newmode "1280x1024_60.00"  109.00  1280 1368 1496 1712  1024 1027 1034 1063 -hsync +vsync
+    xrandr --addmode $EXTMON 1280x1024_60.00
+}
+
+AFTER_EXT() {
+    xrandr --output $EXTMON --rotate left
+}
+
+EXTMODE=1280x1024_60.00
+EXTMON=VGA1
+MODE=1366x768
+MON=LVDS1
+POS=below

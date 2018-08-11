@@ -1,0 +1,14 @@
+EXTMODE=1920x1080i
+EXTMON=HDMI-1
+MODE=1366x768
+MON=LVDS-1
+POS=right-of
+
+AFTER() {
+    map-wacom $MON
+}
+
+AFTER_OFF() {
+    map-wacom $MON
+}
+
