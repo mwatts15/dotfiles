@@ -44,7 +44,7 @@ $HOME/.fehbg
 # show my notes on the last  desktop
 #sleep 2 && keepnote &
 # disable touchpad on when typing
-synclient VertEdgeScroll=1 HorizEdgeScroll=1 TouchpadOff=0 TapButton1=1 RTCornerButton=2
+synclient VertScrollDelta=-112 VertEdgeScroll=1 HorizEdgeScroll=1 TouchpadOff=0 TapButton1=1 RTCornerButton=2
 syndaemon -d -i .3 -K -R &
 numlockx on 
 map-wacom-on-connect &
