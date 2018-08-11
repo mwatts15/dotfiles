@@ -201,7 +201,7 @@ gotoWorkspace w = do s <- gets windowset
 
 {-whenX a f = a >>= \b -> b f-}
 
-myTerm = "~/bin/my-term"
+myTerm = "my-term"
 -- TODO: how to turn this into a string
 -- home = getEnv
 
@@ -239,11 +239,11 @@ main = do handle <- spawnPipe myBar
             , ("<XF86AudioPlay>", spawn "xmms2 toggle")
             , ("M-s", spawn "dxmms2")
             , ("<XF86TouchpadToggle>", spawn "~/bin/mouse_toggle.sh")
-            , ("C-S-<Up>", spawn "amixer -q set Master unmute;amixer -q set Master 5%+;~/bin/xmobar_vol.sh Master")
-            , ("C-S-<Down>", spawn "amixer -q set Master unmute;amixer -q set Master 5%-;~/bin/xmobar_vol.sh Master")
-            , ("<XF86AudioRaiseVolume>", spawn "amixer -q set Master unmute;amixer -q set Master 5%+;~/bin/xmobar_vol.sh Master")
-            , ("<XF86AudioLowerVolume>", spawn "amixer -q set Master unmute;amixer -q set Master 5%-;~/bin/xmobar_vol.sh Master")
-            , ("<XF86AudioMute>", spawn "audio-toggle.sh; ~/bin/xmobar_vol.sh Master")
+            , ("C-S-<Up>", spawn "amixer -q set Master unmute;amixer -q set Master 5%+;xmobar_vol.sh Master")
+            , ("C-S-<Down>", spawn "amixer -q set Master unmute;amixer -q set Master 5%-;xmobar_vol.sh Master")
+            , ("<XF86AudioRaiseVolume>", spawn "amixer -q set Master unmute;amixer -q set Master 5%+;xmobar_vol.sh Master")
+            , ("<XF86AudioLowerVolume>", spawn "amixer -q set Master unmute;amixer -q set Master 5%-;xmobar_vol.sh Master")
+            , ("<XF86AudioMute>", spawn "audio-toggle.sh; xmobar_vol.sh Master")
             , ("M-m", windows swap_win)
             , ("M-S-m", windows bury_win)
             , ("M-y", sendMessage $ JumpToLayout "Tabbed Simplest")
