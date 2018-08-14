@@ -170,8 +170,9 @@ myDecoTheme = def { activeColor         = "#002b36"
 
 myTab = tabbed shrinkText myDecoTheme
 myLayout = (avoidStruts . smartBorders) $ 
-           (tall ||| tp ||| myTab)
+           (tall ||| wide ||| tp ||| myTab)
            where tall = (Tall 1 step ratio)
+                 wide = (Mirror (Tall 1 step ratio))
                  tp = (TwoPane step ratio)
                  ratio = (60/100)
                  step  = (10/100)
