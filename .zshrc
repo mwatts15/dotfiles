@@ -154,9 +154,14 @@ fi
 [[ -n ${key[Left]} ]] && bindkey "${key[Left]}" backward-char
 [[ -n ${key[Down]} ]] && bindkey "${key[Down]}" down-line-or-search
 [[ -n ${key[Right]} ]] && bindkey "${key[Right]}" forward-char
+bindkey '^[Oc' forward-word
+bindkey '^[Od' backward-word
+bindkey '^[[1;5C' forward-word
+bindkey '^[[1;5D' backward-word
 bindkey "vv" vi-cmd-mode
-bindkey '^R' history-beginning-search-backward
-bindkey '^X^X' history-beginning-search-menu
+bindkey '^[Oa' history-beginning-search-backward
+bindkey '^[Ob' history-beginning-search-forward
+bindkey '^R' history-incremental-search-backward
 
 eval `/usr/bin/dircolors -b ~/.dircolors`
 
