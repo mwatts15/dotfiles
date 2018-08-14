@@ -1,0 +1,10 @@
+
+AFTER_EXT() {
+    xrandr --output $EXTMON --rotate left
+}
+
+EXTMODE=1280x1024
+EXTMON=HDMI-1
+MODE=1920x1080
+MON=eDP-1
+POS=right-of

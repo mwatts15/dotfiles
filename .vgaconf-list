@@ -1,4 +1,5 @@
 default:conf:$HOME/.vgaconf:desc:1600x900 ext to the left
 vert:conf:$HOME/.vert.vgaconf:desc:vertical 1280x1024 above
+vert-1:conf:$HOME/.hdmi-3.vgaconf:desc:vertical 1280x1024 left
 home-desktop:conf:$HOME/.hdmi.vgaconf:desc:HDMI primary, left of laptop display
 home-tv:conf:$HOME/.hdmi-2.vgaconf:desc:Laptop primary. TV in my room.
