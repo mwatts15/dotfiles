@@ -60,7 +60,9 @@ set indentkeys-=0#
 set tags=./TAGS,tags;/
 set noequalalways
 
-set formatoptions+=croql
+set formatoptions+=crol " Add comment leader before newlines (cro). Don't auto-wrap lines already too long
+set comments-=fb:- " Remove the so-called comment on hyphen
+
 set shortmess+=filmnrxoOtT      " abbrev. of messages (avoids 'hit enter')
 set cinoptions+=t0,j1,L0
 set nu
@@ -218,6 +220,7 @@ autocmd FileType perl,c,cpp,java,php,javascript,ruby,python,twig,xml,yml,groovy 
 
 autocmd! BufWritePost *.rst silent ! rst2html <afile> 2>/dev/null > rst_out.html
 autocmd FileType rst,markdown set spell
+autocmd FileType rst,markdown setl cin!
 
 imap <Tab> <C-R>=SuperCleverTab()<cr>
 "inoremap <S-Tab> <C-P>
