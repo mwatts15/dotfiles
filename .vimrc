@@ -98,7 +98,7 @@ let g:EasyMotion_leader_key = ','
 let g:EasyMotion_keys = '123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQ'
 
 let g:ycm_autoclose_preview_window_after_insertion = 1
-let g:ycm_filetype_specific_completion_to_disable = ["lisp", "racket", "scheme"]
+let g:ycm_filetype_specific_completion_to_disable = ["lisp", "racket", "scheme", "python"]
 
 let g:syntastic_python_checkers = ["frosted", "flake8"]
 let g:syntastic_c_check_header = 1
