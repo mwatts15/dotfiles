@@ -22,7 +22,7 @@ _var_loop () {
                 exit 2
             fi
         else
-            error "Couldn't find the status file. Waiting for it to be created"
+            error "${0} Couldn't find the status file. Waiting for it to be created"
             _dowait -e create "$base"
         fi
     done
