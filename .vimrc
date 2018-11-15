@@ -32,6 +32,7 @@ set nocompatible
      Plugin 'tfnico/vim-gradle'
      "Plugin 'msanders/snipmate.vim'
      Plugin 'elixir-lang/vim-elixir'
+     Plugin '907th/vim-auto-save'
 
      filetype plugin indent on     " required!
      "
@@ -92,13 +93,23 @@ let g:solarized_contrast="normal"
 let g:solarized_visibility="normal"
 "let g:solarized_termcolors=128
 let g:tex_flavor='latex'
+let g:auto_save = 1
+let g:auto_save_events = ['CursorHold', 'InsertLeave']
+let g:auto_save_presave_hook = 'call Backup()'
+
+function! Backup()
+    "let fileName = expand("%")
+    "call system('cp ' . fileName . ' ' . fileName . '.' . localtime())
+    "call system('ls -1 ' . fileName . '.* | head -n -10 | xargs rm')
+endfunction
+
 colorscheme solarized
 
 let g:EasyMotion_leader_key = ','
 let g:EasyMotion_keys = '123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQ'
 
 let g:ycm_autoclose_preview_window_after_insertion = 1
-let g:ycm_filetype_specific_completion_to_disable = ["lisp", "racket", "scheme", "python"]
+let g:ycm_filetype_specific_completion_to_disable = ["lisp", "racket", "scheme"]
 
 let g:syntastic_python_checkers = ["frosted", "flake8"]
 let g:syntastic_c_check_header = 1
