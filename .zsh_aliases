@@ -29,6 +29,7 @@ alias xsetkbmap=setxkbmap
 alias gah=cat
 alias vexp='vex --path '
 alias gd='git diff'
+alias gdd='git diff origin/dev'
 alias grd='git rebase dev'
 alias gsh='git show'
 alias gl='git log'
@@ -45,7 +46,11 @@ alias gst='git status'
 alias gc='git commit'
 alias gch='git checkout'
 alias gchb='git checkout -b'
+alias gca='git commit -a'
 alias gcam='git commit -am'
+alias mci='mvn clean install'
+alias mi='mvn install'
+alias mc='mvn clean'
 
 pt ()
 {
