@@ -1,7 +1,8 @@
 import XMonad hiding ( (|||) )
 import qualified XMonad as X
-import Data.List (find)
+import Data.List (find,nub)
 import Data.Map 
+
 import qualified Data.Map as M
 import System.Exit
 import qualified XMonad.Config.Desktop as DeskConf
@@ -33,7 +34,7 @@ import XMonad.Util.Dmenu
 import XMonad.Util.WindowProperties
 import XMonad.Util.Themes
 import Control.Monad (liftM2,liftM)
-import XMonad.StackSet hiding (focus, workspaces)
+import XMonad.StackSet hiding (focus)
 import qualified XMonad.StackSet as W
 import XMonad.Util.EZConfig(additionalKeys,additionalKeysP,removeKeys,removeKeysP,additionalMouseBindings)
 import Graphics.X11.ExtraTypes
@@ -41,6 +42,8 @@ import XMonad.Actions.DynamicWorkspaces
 import XMonad.Prompt
 import XMonad.Prompt.Window
 import XMonad.Actions.CopyWindow(copyWindow, kill1)
+
+import XMonad.Actions.TagWindows
 
 import System.IO
 
@@ -220,10 +223,32 @@ copyWindowToCurrentWS w ws = copyWindow w (W.currentTag ws) ws
 copyMenuArgs' :: String -> [String] -> X ()
 copyMenuArgs' menuCmd menuArgs = actionMenu menuCmd menuArgs copyWindowToCurrentWS
 
+tagMenuArgs' :: String -> [String] -> X ()
+tagMenuArgs' cmd args = tagComplList >>= menuArgs cmd args >>= (withFocused . addTag)
+
+gotoTaggedMenu :: X ()
+gotoTaggedMenu = tagComplList >>= (menuArgs "my_dmenu" ["-b"]) >>= focusUpTaggedGlobal
+
+bringTaggedMenu :: X ()
+bringTaggedMenu = tagComplList >>= (menuArgs "my_dmenu" ["-b"]) >>= (\s -> withTaggedGlobalP s shiftHere)
+
+untagMenuArgs' :: String -> [String] -> X ()
+untagMenuArgs' cmd args = tagDelComplList >>= menuArgs cmd args >>= (withFocused . delTag)
+
+tagDelComplList :: X [String]
+tagDelComplList = gets windowset >>= maybe (return []) getTags . peek
+
+-- Copied (almost) verbatim from XMonad.Actions.TagWindows...they don't export
+-- it for some reason
+tagComplList :: X [String]
+tagComplList = gets (concat . Prelude.map (integrate' . stack) . W.workspaces . windowset) >>=
+    mapM getTags >>=
+    return . nub . concat
+
 
 main = do handle <- spawnPipe myBar
           xmonad $ ewmh DeskConf.desktopConfig
-            { workspaces = myWorkspaces
+            { X.workspaces = myWorkspaces
             , borderWidth = 3
             , focusedBorderColor = "#268bd2"
             , normalBorderColor = "#333333"
@@ -298,9 +323,28 @@ main = do handle <- spawnPipe myBar
             , ((myMod .|. shiftMask, xK_Up), windows W.swapUp)
             , ((myMod,               xK_Right),  nextWS)
             , ((myMod,               xK_Left),    prevWS)
+            --, ((myMod,               xK_h),    prevWS)
+            --, ((myMod,               xK_l),  nextWS)
             , ((myMod .|. shiftMask, xK_Right), shiftToNext >> nextWS)
             , ((myMod .|. shiftMask, xK_Left),   shiftToPrev >> prevWS)
             , ((myMod,               xK_x),     toggleWS)
+            --, ((myMod,                 xK_f  ), withFocused (addTag "abc"))
+            --, ((myMod .|. controlMask, xK_f  ), withFocused (delTag "abc"))
+            --, ((myMod .|. shiftMask,   xK_f  ), withTaggedGlobalP "abc" W.sink)
+            --, ((myMod,                 xK_d  ), withTaggedP "abc" (W.shiftWin "2"))
+            --, ((myMod .|. shiftMask,   xK_d  ), withTaggedGlobalP "abc" shiftHere)
+            --, ((myMod .|. controlMask, xK_d  ), focusUpTaggedGlobal "abc")
+            , ((myMod,                 xK_g  ), tagMenuArgs' "my_dmenu" ["-b"])
+            , ((myMod .|. shiftMask,   xK_g  ), untagMenuArgs' "my_dmenu" ["-b"])
+            --, ((myMod, xK_f  ), withFocused (delTag "abc"))
+            --, ((myMod,                 xK_f  ), withFocused (addTag "abc"))
+            , ((myMod,                xK_f ), gotoTaggedMenu)
+            , ((myMod .|. shiftMask,  xK_f ), bringTaggedMenu)
+            --, ((myMod .|. controlMask, xK_g  ), tagDelPrompt def)
+            --, ((myMod .|. shiftMask,   xK_g  ), tagPrompt def (\s -> withTaggedGlobal s float))
+            --, ((modWinMask,                xK_g  ), tagPrompt def (\s -> withTaggedP s (W.shiftWin "2")))
+            --, ((modWinMask .|. shiftMask,  xK_g  ), tagPrompt def (\s -> withTaggedGlobalP s shiftHere))
+            --, ((modWinMask .|. controlMask, xK_g ), tagPrompt def (\s -> focusUpTaggedGlobal s))
             ] 
             ++ 
             zip (zip (repeat (myMod)) ([xK_1..xK_9]++[xK_0])) (Prelude.map gotoWorkspace myWorkspaces)
