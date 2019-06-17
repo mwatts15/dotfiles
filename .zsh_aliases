@@ -29,6 +29,9 @@ alias xsetkbmap=setxkbmap
 alias gah=cat
 alias vexp='vex --path '
 alias gd='git diff'
+alias gdp='git diff --patience'
+alias gdpw='git diff --patience -w'
+alias gb='git branch'
 alias gdd='git diff origin/dev'
 alias grd='git rebase dev'
 alias gsh='git show'
@@ -37,6 +40,21 @@ alias gll='git logl'
 alias gf='git fetch'
 alias gm='git merge'
 alias ga='git add'
+alias fn='find -name'
+
+vfn () {
+    opts=$(find -name $1)
+    IFS=$'\n'
+    select opt in "$opts" ; do
+        if [ $opt ] ; then
+            echo $EDITOR $opt 
+            $EDITOR $opt 
+        else
+            break
+        fi
+    done
+}
+
 gp ()
 {
     br=$(git rev-parse --abbrev-ref HEAD)
@@ -60,3 +78,5 @@ pt ()
         python setup.py test
     fi
 }
+
+alias dpth='echo $SHLVL'
