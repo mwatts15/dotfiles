@@ -191,7 +191,7 @@ function unzip ()
 {
     local real_unzip="/usr/bin/unzip"
     if [ ${#@} -eq 1 -a -f $1 -a -z "${1:#*.zip}" ] ; then
-        exdir=`dirname "$1"`/`basename "$1" .zip`
+        exdir=`basename "$1" .zip`
         echo unzipping to $exdir
         $real_unzip $1 -d $exdir 
     else
@@ -226,8 +226,8 @@ function up ()
             dots=${spaces// /../}
             cd $dots
         elif [[ $PWD =~ $1 ]] ; then
-            realDir=`echo $PWD | /bin/grep -o "[^/]*$1[^/]*" | tail -n 1`
-            cd ${PWD%$realDir*}$realDir
+            realDir=`echo "$(dirname "$PWD")" | /bin/grep -o "[^/]*$1[^/]*" | tail -n 1`
+            cd ${PWD%/$realDir/*}/$realDir
         fi
     else
         cd ..
