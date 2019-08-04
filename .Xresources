@@ -184,6 +184,7 @@ Xft.hintstyle:  hintmedium
 *Rxvt.keysym.F7:   perl:clipboard:copy
 *Rxvt.keysym.F8:   perl:clipboard:paste
 *Rxvt.keysym.S-F8: perl:clipboard:paste_escaped
+*Rxvt.keysym.C-S-F: searchable-scrollback:start
 *Rxvt.clipboard.autocopy: true
 *Rxvt.url-select.underline: true
 *Rvxt.url-select.button: 1
