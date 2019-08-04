@@ -24,6 +24,9 @@
 [url "git@github.com:mwatts15/"]
     insteadOf = mwatts15://
 
+[url "git@github.com:"]
+    insteadOf = github://
+
 [include]
     path = ~/.gitconfig.local
 
