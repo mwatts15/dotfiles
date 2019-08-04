@@ -94,8 +94,9 @@ let g:solarized_visibility="normal"
 "let g:solarized_termcolors=128
 let g:tex_flavor='latex'
 let g:auto_save = 1
-let g:auto_save_events = ['CursorHold', 'InsertLeave']
+let g:auto_save_events = ['CursorHold', 'TextChanged', 'InsertLeave']
 let g:auto_save_presave_hook = 'call Backup()'
+let g:auto_save_silent = 1
 
 function! Backup()
     "let fileName = expand("%")
@@ -126,6 +127,8 @@ let g:SuperTabMappingForward = "<tab>"
 
 let NERDTreeIgnore=['\.o$', '\.sw[a-z]$', '\.hi$']
 let g:NERDTreeMapHelp=""
+let g:NERDTreeMapJumpNextSibling=""
+let g:NERDTreeMapJumpPrevSibling=""
 
 set linebreak
 set display+=lastline
@@ -232,6 +235,7 @@ autocmd FileType perl,c,cpp,java,php,javascript,ruby,python,twig,xml,yml,groovy 
 autocmd! BufWritePost *.rst silent ! rst2html <afile> 2>/dev/null > rst_out.html
 autocmd FileType rst,markdown set spell
 autocmd FileType rst,markdown setl cin!
+autocmd FileType rst,markdown setl indentkeys=
 
 imap <Tab> <C-R>=SuperCleverTab()<cr>
 "inoremap <S-Tab> <C-P>
