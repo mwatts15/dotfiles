@@ -1,46 +1,54 @@
-alias eal='$EDITOR $HOME/.zsh_aliases; source $HOME/.zsh_aliases'
-alias bc='bc -il ~/.bc/*.bc'
-alias ren='mv -n'
-alias help=man
-alias cl='clisp -repl ~/.cl/*.cl'
-alias l='ls'
-alias ll='ls -l --time-style=full-iso'
-alias ls='/bin/ls --group-directories-first --color=auto -F'
-alias rm="rm -I"
-alias go='cd'
+alias acli='arduino-cli'
 alias back='popd'
-alias xclip="xclip -sel clipboard"
-alias wicd-client="wicd-client -n"
-alias setcur='set_current_project'
-alias defp='define_project'
-alias lstp='list_projects'
-alias rmp='delete_project'
-alias xlock='xscreensaver-command --lock'
-alias grepl='grep --color=auto -n'
-alias e=$EDITOR
-alias kilall=killall
-alias ↑=up
+alias bc='bc -il ~/.bc/*.bc'
 alias cd-='cd -'
-alias py=python
-alias ipy=ipython
-alias py3=python3
-alias ipy3=ipython3
-alias xsetkbmap=setxkbmap
+alias cl='clisp -repl ~/.cl/*.cl'
+alias dk='docker kill'
+alias dps='docker ps'
+alias drm='docker rm'
+alias dins='docker inspect'
+alias dis='docker images'
+alias defp='define_project'
+alias e=$EDITOR
+alias eal='$EDITOR $HOME/.zsh_aliases; source $HOME/.zsh_aliases'
+alias fn='find -name'
+alias ga='git add'
 alias gah=cat
-alias vexp='vex --path '
+alias gb='git branch'
 alias gd='git diff'
+alias gdd='git diff origin/dev'
 alias gdp='git diff --patience'
 alias gdpw='git diff --patience -w'
-alias gb='git branch'
-alias gdd='git diff origin/dev'
-alias grd='git rebase dev'
-alias gsh='git show'
+alias gf='git fetch'
 alias gl='git log'
 alias gll='git logl'
-alias gf='git fetch'
 alias gm='git merge'
-alias ga='git add'
-alias fn='find -name'
+alias gp='git push'
+alias gpu='git push -u origin'
+alias go='cd'
+alias grd='git rebase dev'
+alias grepl='grep --color=auto -n'
+alias gsh='git show'
+alias help=man
+alias ipy3=ipython3
+alias ipy=ipython
+alias kilall=killall
+alias l="ls --hide='*.pyc'"
+alias ll='ls -l --time-style=full-iso'
+alias ls='/bin/ls --group-directories-first --color=auto -F'
+alias lstp='list_projects'
+alias py3=python3
+alias py=python
+alias ren='mv -n'
+alias rm="rm -I"
+alias rmp='delete_project'
+alias setcur='set_current_project'
+alias vexp='vex --path '
+alias wicd-client="wicd-client -n"
+alias xclip="xclip -sel clipboard"
+alias xlock='xscreensaver-command --lock'
+alias xsetkbmap=setxkbmap
+alias ↑=up
 
 vfn () {
     opts=$(find -name $1)
@@ -55,11 +63,6 @@ vfn () {
     done
 }
 
-gp ()
-{
-    br=$(git rev-parse --abbrev-ref HEAD)
-    git push -u origin $br "$@"
-}
 alias gst='git status'
 alias gc='git commit'
 alias gch='git checkout'
