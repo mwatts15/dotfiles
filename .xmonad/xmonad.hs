@@ -18,7 +18,7 @@ import XMonad.Layout.TwoPane
 import XMonad.Layout.SubLayouts
 import XMonad.Layout.BoringWindows as BW hiding (focusMaster)
 import XMonad.Layout.Tabbed
-import XMonad.Actions.WindowBringer hiding (actionMenu)
+import XMonad.Actions.WindowBringer hiding (actionMenu, menuArgs)
 {-import Main.WindowBringer-}
 --import XMonad.Layout.SimpleDecoration
 
@@ -58,7 +58,7 @@ myWorkspaces = [[a] ++ ":" ++ b | (a, b) <- zip myNumbers myTags]
 get_ws x = [myNumbers !! k ] ++ ":" ++ (myTags !! k)
            where 
             k = (get_index x myOldTags)
-myScreens = [('\'', 0), (',', 1),
+myScreens = [('\'', 1), (',', 0),
              ('a',  2), ('o', 3)]
 {-
     This is my replacement for XMonadPrompt using dmenu
@@ -75,6 +75,7 @@ manage_hook = composeAll
     , className >>= io . appendFile "/home/markw/xmonad_debug" >> idHook
     , className =? "sun-awt-X11-XFramePeer" --> doFloat
     , className =? "Zenity" --> doFloat
+    , className =? "arduino" --> doFloat
     , className =? "Xephyr" --> doShift (get_ws "6")
     , className =? "Xephyr" --> doSink
     , transience'
