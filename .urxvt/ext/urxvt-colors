@@ -12,7 +12,7 @@ sub on_start {
    $self->cmd_parse($output);
 
    my $fh;
-   # XXX: HACK: I couldn't think of any other way to communicate between 
+   # XXX: HACK: I couldn't think of any other way to communicate between
    # instances of this script
    if (-e $fifo_name)
    {

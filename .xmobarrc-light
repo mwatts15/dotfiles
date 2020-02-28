@@ -1,0 +1,21 @@
+Config { font = "xft:Noto Sans Mono CJK JP Regular:pixelsize=10"
+       , borderColor = "black"
+       , border = NoBorder
+       , bgColor = "#fdf6e3"
+       , fgColor = "#657b83"
+       , position = TopSize C 100 15
+       , allDesktops = True
+       , lowerOnStart = True
+       , commands = [ Run Com "uname" ["-s","-r"] "" 0
+                    , Run Com "hostname" ["-f"] "" 36000
+                    , Run Com "whoami" [] "user" 0
+                    , Run StdinReader
+                    , Run Date "%a %_d %b %Y %H:%M:%S" "date" 10
+                    , Run Uptime [] 36000
+                    , Run Kbd [("us(dvorak)", "DV"), ("us", "US")]
+                    , Run PipeReader "/tmp/markw-battery-status-pipe" "battery"
+                    ]
+       , sepChar = "%"
+       , alignSep = "}{"
+       , template = "%StdinReader% }<fc=#8aadb9>%user%</fc>@%hostname% <fc=#c0c0c0>(</fc> %uname% <fc=#c0c0c0>)</fc>{%battery% <fc=#c0c0c0>::</fc> <fc=#c0c0c0>[</fc>%kbd%<fc=#c0c0c0>]</fc> <fc=#c0c0c0>::</fc> <fc=#8aadb9>%date%</fc> <fc=#c0c0c0>::</fc> %uptime%"
+       }

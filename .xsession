@@ -44,9 +44,12 @@ $HOME/.fehbg
 # show my notes on the last  desktop
 #sleep 2 && keepnote &
 # disable touchpad on when typing
+xmodmap ~/.xmodmap
 synclient VertScrollDelta=-112 VertEdgeScroll=1 HorizEdgeScroll=1 TouchpadOff=0 TapButton1=1 RTCornerButton=2
 syndaemon -d -i .3 -K -R &
 numlockx on 
+
+vgareset
 map-wacom-on-connect &
 set-wacom-keys-on-connect &
 # pretty notifications
@@ -55,7 +58,10 @@ set-wacom-keys-on-connect &
 WMNAME=xmonad
 
 PATH=$PATH:$HOME/.cabal/bin
-#.config/xmobar/xmobarrc.pl
-(sleep 3 && battery_status.sh) &
-(sleep 2 && xmobar .xmobarrc_ && xmobar_vol.sh Master) &
-exec $WMNAME
+(sleep 2 && xmobar .xmobarrc_) &
+xmobar_vol.sh Master &
+
+OUT="/tmp/${USER}-dynamic-log-pipe"
+mkfifo -m 0700 "$OUT" || echo "couldn't make the pipe!" >&2
+(sleep 2 && xmobar < $OUT) &
+exec $WMNAME > "$OUT"

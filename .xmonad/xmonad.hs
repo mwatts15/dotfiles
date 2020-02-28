@@ -1,10 +1,14 @@
+{-# LANGUAGE DeriveDataTypeable #-}
 import XMonad hiding ( (|||) )
 import qualified XMonad as X
 import Data.List (find,nub)
 import Data.Map 
+import Data.Text (strip, pack, unpack) 
 
 import qualified Data.Map as M
 import System.Exit
+import System.Process (readProcess)
+import System.IO
 import qualified XMonad.Config.Desktop as DeskConf
 import XMonad.Hooks.EwmhDesktops
 import XMonad.Layout.NoBorders
@@ -19,6 +23,7 @@ import XMonad.Layout.SubLayouts
 import XMonad.Layout.BoringWindows as BW hiding (focusMaster)
 import XMonad.Layout.Tabbed
 import XMonad.Actions.WindowBringer hiding (actionMenu, menuArgs)
+import XMonad.Layout.Decoration( DecorationMsg( SetTheme ) )
 {-import Main.WindowBringer-}
 --import XMonad.Layout.SimpleDecoration
 
@@ -26,7 +31,7 @@ import XMonad.Layout.WindowNavigation
 import XMonad.Hooks.ManageDocks
 import XMonad.Hooks.DynamicLog
 import XMonad.Actions.FindEmptyWorkspace
-import XMonad.Actions.UpdatePointer
+import XMonad.Actions.UpdatePointer (updatePointer)
 import XMonad.Actions.CycleWS
 import XMonad.Hooks.ManageHelpers
 import XMonad.Util.Run(spawnPipe)
@@ -44,8 +49,6 @@ import XMonad.Prompt.Window
 import XMonad.Actions.CopyWindow(copyWindow, kill1)
 
 import XMonad.Actions.TagWindows
-
-import System.IO
 
 get_index :: (Eq a) => a -> [a] -> Int
 get_index _ [] = (- 1)
@@ -109,16 +112,15 @@ doSink = ask >>= \w -> liftX (reveal w) >> doF (W.sink w)
 myMod = mod4Mask
 myBar = "xmobar"
 
-myPP handle = xmobarPP 
+myPP lightOrDark = xmobarPP 
     {   ppCurrent = xmobarColor "#268bd2" ""
     ,   ppUrgent  = xmobarColor "#ff69b4" ""
     ,   ppOrder   = \(ws:_:t:_) -> [ws,t]
     ,   ppWsSep   = "  "
     ,   ppHidden  = xmobarColor "gray50" "" 
-    ,   ppHiddenNoWindows  = xmobarColor "gray30" "" . ((:[]) . head)
+    ,   ppHiddenNoWindows  = xmobarColor (if lightOrDark == "solarized-light" then "gray70" else "gray30") "" . ((:[]) . head)
     ,   ppTitle   = xmobarColor "gray50" "" . shorten 55
-    ,   ppSep     = xmobarColor "#c0c0c0" "" " :: "
-    ,   ppOutput  = \str -> hPutStrLn handle $ str
+    ,   ppSep     = xmobarColor "#c0c0c0" "" " :: "++lightOrDark
     }
 
 listrotate (x:xs) = xs ++ [x]
@@ -135,7 +137,14 @@ hide' (Just w) = hide w
 rotateWindows = modWindowStack listrotate
 rotateWindowsr = modWindowStack listrotater
 
-myLogHook h = dynamicLogWithPP (myPP h)
+readTheme = do
+    handle <- io $ openBinaryFile "/home/markw/.dynamic-colors/colorscheme" ReadMode ;
+    s <- io $ hGetLine handle ;
+    return s
+
+myLogHook = do 
+    s <- readTheme ;
+    dynamicLogWithPP (myPP s)
               >> updatePointer (0.5, 0.5) (0, 0)
 
 {--get_alt_win our_stack
@@ -162,17 +171,30 @@ bury (x:xs) = xs ++ [x]
 -- for modifying stack with list functions
 modify_stack f = W.differentiate . f . W.integrate
 bury_win = (W.modify Nothing $ modify_stack bury) . shiftMaster
-myDecoTheme = def { activeColor         = "#002b36"
-                  , inactiveColor       = "#03151a"
-                  , activeBorderColor   = "#002b36"
-                  , inactiveBorderColor = "#002b36"
-                  , activeTextColor     = "#268bd2"
-                  , inactiveTextColor   = "gray50"
-                  , fontName            = "xft:Noto Sans Mono CJK JP Regular:pixelsize=10"
-                  , decoHeight          = 16
-                  } 
+myDecoTheme theme = 
+    if theme == "solarized-dark"
+    then
+        def { activeColor         = "#002b36"
+            , inactiveColor       = "#03151a"
+            , activeBorderColor   = "#002b36"
+            , inactiveBorderColor = "#002b36"
+            , activeTextColor     = "#268bd2"
+            , inactiveTextColor   = "gray50"
+            , fontName            = "xft:Noto Sans Mono CJK JP Regular:pixelsize=10"
+            , decoHeight          = 16
+            } 
+    else
+        def { activeColor         = "#fdf6e3"
+            , inactiveColor       = "#eee8d5"
+            , activeBorderColor   = "#fdf6e3"
+            , inactiveBorderColor = "#fdf6e3"
+            , activeTextColor     = "#268bd2"
+            , inactiveTextColor   = "gray50"
+            , fontName            = "xft:Noto Sans Mono CJK JP Regular:pixelsize=10"
+            , decoHeight          = 16
+            } 
 
-myTab = tabbed shrinkText myDecoTheme
+myTab = tabbed shrinkText $ myDecoTheme "solarized-dark"
 myLayout = (avoidStruts . smartBorders) $ 
            (tall ||| wide ||| tp ||| myTab)
            where tall = (Tall 1 step ratio)
@@ -247,8 +269,9 @@ tagComplList = gets (concat . Prelude.map (integrate' . stack) . W.workspaces . 
     return . nub . concat
 
 
-main = do handle <- spawnPipe myBar
-          xmonad $ ewmh DeskConf.desktopConfig
+main = do 
+       hSetBinaryMode stdout True ;
+       xmonad $ ewmh DeskConf.desktopConfig
             { X.workspaces = myWorkspaces
             , borderWidth = 3
             , focusedBorderColor = "#268bd2"
@@ -257,7 +280,7 @@ main = do handle <- spawnPipe myBar
             , manageHook = manage_hook <+> manageHook DeskConf.desktopConfig
             , terminal = myTerm
             , layoutHook = myLayout
-            , logHook = myLogHook handle
+            , logHook = myLogHook
             , handleEventHook = handleEventHook DeskConf.desktopConfig <+> fullscreenEventHook
             }
             `additionalKeysP`
@@ -279,7 +302,6 @@ main = do handle <- spawnPipe myBar
             , ("M-S-.", sendMessage (IncMasterN 1))
             , ("M-S-c", spawn "xmonad --recompile && xmonad --restart")
             , ("M-q", kill1)
-            , ("M-S-q", kill1)
             , ("M-c", spawn "dclip copy")
             , ("M-v", spawn "dclip paste")
             , ("M-S-l", spawn "xscreensaver-command --lock")
@@ -296,6 +318,10 @@ main = do handle <- spawnPipe myBar
             , ((0, xK_Print), spawn "scrot \'/home/markw/pictures/scrots/%Y%m%d%H%M%S_scrot-$wx$h.png\'")
             , ((controlMask .|. mod1Mask, xK_1), spawn "setxkbmap us -variant dvorak")
             , ((mod1Mask .|. controlMask, xK_2), spawn "setxkbmap us")
+            , ((myMod .|. shiftMask, xK_o), do 
+                theme <- readTheme ;
+                spawn "toggle-color-scheme.sh" ;
+                (sendMessage . SetTheme) $ myDecoTheme (if (unpack (strip (pack theme))) == "solarized-dark" then "solarized-light" else "solarized-dark"))
             , ((myMod, xK_d), spawn "todo")
             , ((myMod .|. shiftMask, xK_z), io $ exitWith ExitSuccess)
             --, ((myMod .|. controlMask, xK_h), sendMessage $ pullGroup L)
@@ -352,4 +378,4 @@ main = do handle <- spawnPipe myBar
             ++
             zip (zip (repeat (myMod .|. shiftMask)) ([xK_1..xK_9]++[xK_0])) (Prelude.map (\ws -> (addHiddenWorkspace ws) >> (windows $ W.shift ws)) myWorkspaces))
             `removeKeysP`
-            (["M-S-q", "M-Space"] ++ ["M-" ++ mod ++ [key] | key <- "wer", mod <- ["", "S-"]])
+            (["M-S-q", "M-S-t", "M-Space"] ++ ["M-" ++ mod ++ [key] | key <- "wer", mod <- ["", "S-"]])
