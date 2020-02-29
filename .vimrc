@@ -15,7 +15,7 @@ set nocompatible
      Plugin 'tpope/vim-fugitive'
      Plugin 'scrooloose/syntastic'
      Plugin 'scrooloose/nerdcommenter'
-     Plugin 'scrooloose/nerdtree'
+     "Plugin 'scrooloose/nerdtree'
 
      Plugin 'Lokaltog/vim-easymotion'
      Plugin 'powerline/powerline', {'rtp': 'powerline/bindings/vim/'}
@@ -25,7 +25,7 @@ set nocompatible
      "Plugin 'flazz/vim-colorschemes'
 
      Plugin 'tpope/vim-surround'
-     Plugin 'Valloric/YouCompleteMe'
+     "Plugin 'Valloric/YouCompleteMe'
      Plugin 'plasticboy/vim-markdown'
      Plugin 'MultipleSearch', {'pinned': 1}
      Plugin 'terryma/vim-multiple-cursors'
@@ -112,7 +112,6 @@ let g:EasyMotion_keys = '123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQ'
 let g:ycm_autoclose_preview_window_after_insertion = 1
 let g:ycm_filetype_specific_completion_to_disable = ["lisp", "racket", "scheme"]
 
-let g:syntastic_python_checkers = ["frosted", "flake8"]
 let g:syntastic_c_check_header = 1
 let g:syntastic_c_config_file = '.syntastic_c_config'
 let g:syntastic_java_javac_config_file = '.syntastic_javac_config'
@@ -125,10 +124,14 @@ let g:syntastic_check_on_wq = 0
 " From snipMate
 let g:SuperTabMappingForward = "<tab>"
 
-let NERDTreeIgnore=['\.o$', '\.sw[a-z]$', '\.hi$']
-let g:NERDTreeMapHelp=""
-let g:NERDTreeMapJumpNextSibling=""
-let g:NERDTreeMapJumpPrevSibling=""
+"let NERDTreeIgnore=['\.o$', '\.sw[a-z]$', '\.hi$']
+"let g:NERDTreeMapHelp=""
+"let g:NERDTreeMapJumpNextSibling=""
+"let g:NERDTreeMapJumpPrevSibling=""
+"
+let g:netrw_banner = 0
+let g:netrw_fastbrowse = 2
+
 
 set linebreak
 set display+=lastline
@@ -166,7 +169,7 @@ inoremap <expr> {  strpart(getline('.'), col('.')-1, 1) == "}" ? "{\<Left>" :"{"
 
 nmap <C-J> <C-W>j<C-W>_
 nmap <C-K> <C-W>k<C-W>_
-nmap <C-L> <C-W>l<C-W>\|
+noremap <C-L> <C-W>l<C-W>\|
 nmap <C-H> <C-W>h<C-W>\|
 
 cmap Sh sh
