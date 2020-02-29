@@ -24,8 +24,6 @@ import XMonad.Layout.BoringWindows as BW hiding (focusMaster)
 import XMonad.Layout.Tabbed
 import XMonad.Actions.WindowBringer hiding (actionMenu, menuArgs)
 import XMonad.Layout.Decoration( DecorationMsg( SetTheme ) )
-{-import Main.WindowBringer-}
---import XMonad.Layout.SimpleDecoration
 
 import XMonad.Layout.WindowNavigation
 import XMonad.Hooks.ManageDocks
@@ -75,7 +73,6 @@ manage_hook = composeAll
     [ title =? "irssi" --> doShift (get_ws "3")
     , className =? "xmessage" --> doFloat
     , resource =? "gimp" --> doSink
-    , className >>= io . appendFile "/home/markw/xmonad_debug" >> idHook
     , className =? "sun-awt-X11-XFramePeer" --> doFloat
     , className =? "Zenity" --> doFloat
     , className =? "arduino" --> doFloat
@@ -84,26 +81,6 @@ manage_hook = composeAll
     , transience'
     , manageDocks
     ]
-    {-where viewShift = doF . liftM2 (.) W.view W.shift-}
-
--- | Pops open a prompt with window titles. Choose one, and you will be
--- taken to the corresponding workspace.
-{-doPrompt :: WindowPrompt String -> X ()-}
-{-doPrompt t c = do-}
-  {-a <- case t of-}
-         {-Goto  -> fmap gotoAction  windowMap-}
-         {-Bring -> fmap bringAction windowMap-}
-         {-BringCopy -> fmap bringCopyAction windowMap-}
-  {-wm <- windowMap-}
-  {-mkXPrompt t c (compList wm) a-}
-
-    {-where-}
-      {-winAction a m    = flip whenJust (windows . a) . flip M.lookup m-}
-      {-gotoAction       = winAction W.focusWindow-}
-      {-bringAction      = winAction bringWindow-}
-      {-bringCopyAction  = winAction bringCopyWindow-}
-
-      {-compList m s = return . filter (searchPredicate c s) . map fst . M.toList $ m-}
 
 doSink :: ManageHook
 doSink = ask >>= \w -> liftX (reveal w) >> doF (W.sink w)
@@ -146,15 +123,6 @@ myLogHook = do
     s <- readTheme ;
     dynamicLogWithPP (myPP s)
               >> updatePointer (0.5, 0.5) (0, 0)
-
-{--get_alt_win our_stack
-        | focused == master = alt_win
-        | otherwise         = master
-        where focused = elim $ W.peek our_stack-- our_ws
-              master  = head $ W.index our_stack-- . our_ws
-              alt_win = head $ tail $ W.index our_stack-- . our_ws
-              elim (Just a) = a
---}
 
 focusSideStack stack = focusWindow (head $ tail $ W.index stack) stack
 
@@ -202,16 +170,10 @@ myLayout = (avoidStruts . smartBorders) $
                  tp = (TwoPane step ratio)
                  ratio = (60/100)
                  step  = (10/100)
-{-deXer (X a)  = a-}
-{----}
-{--- | Conditionally run an action, using a @Maybe a@ to decide.-}
-{-whenJust :: Monad m => Maybe a -> (a -> m ()) -> m ()-}
-{-whenJust mg f = maybe (return ()) f mg-}
 
 -- | Conditionally run an action, using a 'X' event to decide
 -- | bind the result of dmenu and run the action on the result
 
-{-get_ws_by_dmenu :: [String] -> X ()-}
 dmenuDo :: Map String a -> a -> (a -> X()) -> X()
 dmenuDo choices d action = (dmenuMap choices) >>=
     \choice -> case choice of
@@ -222,15 +184,8 @@ gotoWorkspace w = do s <- gets windowset
                      if tagMember w s
                         then windows $ greedyView w
                         else addWorkspace w
-{-viewShift = doF . liftM2 (.) W.view W.shift-}
--- | Calls dmenuMap to grab the appropriate Window, and hands it off to action
---   if found.
-
-{-whenX a f = a >>= \b -> b f-}
 
 myTerm = "my-term"
--- TODO: how to turn this into a string
--- home = getEnv
 
 -- Copied from WindowBringer module because I needed to make my own for bringing windows as copies
 -- | Calls dmenuMap to grab the appropriate Window, and hands it off to action
@@ -327,18 +282,9 @@ main = do
             , ((myMod .|. shiftMask, xK_o), do 
                 theme <- readTheme ;
                 spawn "toggle-color-scheme.sh" ;
-                (sendMessage . SetTheme) $ myDecoTheme (if (unpack (strip (pack theme))) == "solarized-dark" then "solarized-light" else "solarized-dark"))
+                (broadcastMessage . SetTheme) $ myDecoTheme (if (unpack (strip (pack theme))) == "solarized-dark" then "solarized-light" else "solarized-dark"))
             , ((myMod, xK_d), spawn "todo")
             , ((myMod .|. shiftMask, xK_z), io $ exitWith ExitSuccess)
-            --, ((myMod .|. controlMask, xK_h), sendMessage $ pullGroup L)
-            --, ((myMod .|. controlMask, xK_l), sendMessage $ pullGroup R)
-            --, ((myMod .|. controlMask, xK_k), sendMessage $ pullGroup U)
-            --, ((myMod .|. controlMask, xK_j), sendMessage $ pullGroup D)
-            --, ((myMod .|. controlMask, xK_m), withFocused (sendMessage . MergeAll))
-            --, ((myMod .|. controlMask, xK_u), withFocused (sendMessage . UnMerge))
-            --, ((myMod .|. controlMask, xK_period), onGroup W.focusUp')
-            --, ((myMod .|. controlMask, xK_comma), onGroup W.focusDown')
-
             , ((myMod, xK_t), spawn myTerm)
             , ((myMod, xK_b), sendMessage $ ToggleStrut D)
             , ((myMod .|. shiftMask, xK_b), sendMessage ToggleStruts)
@@ -347,7 +293,6 @@ main = do
             , ((myMod .|. shiftMask, xK_n), bringMenuArgs' "my_dmenu" ["-b"])
             , ((myMod .|. shiftMask .|. controlMask, xK_n), copyMenuArgs' "my_dmenu" ["-b"])
             , ((myMod, xK_space), spawn "dmenu_run_plus -i -p Run -fn 'Noto Sans Mono CJK JP Regular':pixelsize=10 -lh 19")
-            --, ((myMod, xK_space), spawn "launcher")
             , ((myMod, xK_Down), BW.focusDown)
             , ((myMod, xK_Up), BW.focusUp)
             , ((mod1Mask , xK_Tab), windows rotateWindows)
@@ -356,28 +301,13 @@ main = do
             , ((myMod .|. shiftMask, xK_Up), windows W.swapUp)
             , ((myMod,               xK_Right),  nextWS)
             , ((myMod,               xK_Left),    prevWS)
-            --, ((myMod,               xK_h),    prevWS)
-            --, ((myMod,               xK_l),  nextWS)
             , ((myMod .|. shiftMask, xK_Right), shiftToNext >> nextWS)
             , ((myMod .|. shiftMask, xK_Left),   shiftToPrev >> prevWS)
-            , ((myMod,               xK_x),     toggleWS)
-            --, ((myMod,                 xK_f  ), withFocused (addTag "abc"))
-            --, ((myMod .|. controlMask, xK_f  ), withFocused (delTag "abc"))
-            --, ((myMod .|. shiftMask,   xK_f  ), withTaggedGlobalP "abc" W.sink)
-            --, ((myMod,                 xK_d  ), withTaggedP "abc" (W.shiftWin "2"))
-            --, ((myMod .|. shiftMask,   xK_d  ), withTaggedGlobalP "abc" shiftHere)
-            --, ((myMod .|. controlMask, xK_d  ), focusUpTaggedGlobal "abc")
-            , ((myMod,                 xK_g  ), tagMenuArgs' "my_dmenu" ["-b"])
+            , ((myMod, xK_x), toggleWS)
+            , ((myMod, xK_g), tagMenuArgs' "my_dmenu" ["-b"])
             , ((myMod .|. shiftMask,   xK_g  ), untagMenuArgs' "my_dmenu" ["-b"])
-            --, ((myMod, xK_f  ), withFocused (delTag "abc"))
-            --, ((myMod,                 xK_f  ), withFocused (addTag "abc"))
             , ((myMod,                xK_f ), gotoTaggedMenu)
             , ((myMod .|. shiftMask,  xK_f ), bringTaggedMenu)
-            --, ((myMod .|. controlMask, xK_g  ), tagDelPrompt def)
-            --, ((myMod .|. shiftMask,   xK_g  ), tagPrompt def (\s -> withTaggedGlobal s float))
-            --, ((modWinMask,                xK_g  ), tagPrompt def (\s -> withTaggedP s (W.shiftWin "2")))
-            --, ((modWinMask .|. shiftMask,  xK_g  ), tagPrompt def (\s -> withTaggedGlobalP s shiftHere))
-            --, ((modWinMask .|. controlMask, xK_g ), tagPrompt def (\s -> focusUpTaggedGlobal s))
             ] 
             ++ 
             zip (zip (repeat (myMod)) ([xK_1..xK_9]++[xK_0])) (Prelude.map gotoWorkspace myWorkspaces)
