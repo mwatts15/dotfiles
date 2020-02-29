@@ -194,7 +194,7 @@ myDecoTheme theme =
             , decoHeight          = 16
             } 
 
-myTab = tabbed shrinkText $ myDecoTheme "solarized-dark"
+myTab = tabbed shrinkText $ myDecoTheme "solarized-light"
 myLayout = (avoidStruts . smartBorders) $ 
            (tall ||| wide ||| tp ||| myTab)
            where tall = (Tall 1 step ratio)
@@ -296,8 +296,14 @@ main = do
             , ("<XF86AudioMute>", spawn "audio-toggle.sh; xmobar_vol.sh Master")
             , ("M-m", windows swap_win)
             , ("M-S-m", windows bury_win)
-            , ("M-y", sendMessage $ JumpToLayout "Tabbed Simplest")
-            , ("M-p", sendMessage $ NextLayout)
+            , ("M-y", do
+                sendMessage $ JumpToLayout "Tabbed Simplest" ;
+                theme <- readTheme ;
+                (sendMessage . SetTheme) $ myDecoTheme (unpack (strip (pack theme))))
+            , ("M-p", do
+                sendMessage $ NextLayout ;
+                theme <- readTheme ;
+                (sendMessage . SetTheme) $ myDecoTheme (unpack (strip (pack theme))))
             , ("M-i", shiftTo Prev (WSIs $ return (((get_ws "5") ==) . tag)))
             , ("M-S-.", sendMessage (IncMasterN 1))
             , ("M-S-c", spawn "xmonad --recompile && xmonad --restart")
