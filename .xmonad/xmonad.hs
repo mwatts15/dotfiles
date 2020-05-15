@@ -1,8 +1,7 @@
 {-# LANGUAGE DeriveDataTypeable #-}
 import XMonad hiding ( (|||) )
 import qualified XMonad as X
-import Data.List (find,nub)
-import Data.Map 
+import Data.List (find, nub, intersperse, unlines)
 import Data.Text (strip, pack, unpack) 
 
 import qualified Data.Map as M
@@ -21,9 +20,10 @@ import XMonad.Layout.Dishes
 import XMonad.Layout.TwoPane
 import XMonad.Layout.SubLayouts
 import XMonad.Layout.BoringWindows as BW hiding (focusMaster)
-import XMonad.Layout.Tabbed
+--import XMonad.Layout.Tabbed
+import Tabbed
 import XMonad.Actions.WindowBringer hiding (actionMenu, menuArgs)
-import XMonad.Layout.Decoration( DecorationMsg( SetTheme ) )
+import Decoration( DecorationMsg( SetTheme ) )
 
 import XMonad.Layout.WindowNavigation
 import XMonad.Hooks.ManageDocks
@@ -53,7 +53,8 @@ get_index _ [] = (- 1)
 get_index n xs = length (takeWhile (/= n) xs)
 
 myOldTags = ["1","2","3","4","5","6","7","8","9","0"]
-myTags = [[a] | a <- ['\9312'..'\9323']]
+--myTags = [[a] | a <- ['\9312'..'\9323']]
+myTags = ["1","2","3","4","5","6","7","8","9","0"]
 myNumbers = "一二三四五六七八九十"
 myWorkspaces = [[a] ++ ":" ++ b | (a, b) <- zip myNumbers myTags]
 get_ws x = [myNumbers !! k ] ++ ":" ++ (myTags !! k)
@@ -97,7 +98,7 @@ myPP lightOrDark = xmobarPP
     ,   ppHidden  = xmobarColor "gray50" "" 
     ,   ppHiddenNoWindows  = xmobarColor (if lightOrDark == "solarized-light" then "gray70" else "gray30") "" . ((:[]) . head)
     ,   ppTitle   = xmobarColor "gray50" "" . shorten 55
-    ,   ppSep     = xmobarColor "#c0c0c0" "" " :: "++lightOrDark
+    ,   ppSep     = xmobarColor "#c0c0c0" "" " :: "
     }
 
 listrotate (x:xs) = xs ++ [x]
@@ -117,6 +118,7 @@ rotateWindowsr = modWindowStack listrotater
 readTheme = do
     handle <- io $ openBinaryFile "/home/markw/.dynamic-colors/colorscheme" ReadMode ;
     s <- io $ hGetLine handle ;
+    io $ hClose handle ;
     return s
 
 myLogHook = do 
@@ -148,7 +150,7 @@ myDecoTheme theme =
             , inactiveBorderColor = "#002b36"
             , activeTextColor     = "#268bd2"
             , inactiveTextColor   = "gray50"
-            , fontName            = "xft:Noto Sans Mono CJK JP Regular:pixelsize=10"
+            , fontName            = "xft:Noto Sans Mono CJK JP:pixelsize=10"
             , decoHeight          = 16
             } 
     else
@@ -158,7 +160,7 @@ myDecoTheme theme =
             , inactiveBorderColor = "#fdf6e3"
             , activeTextColor     = "#268bd2"
             , inactiveTextColor   = "gray50"
-            , fontName            = "xft:Noto Sans Mono CJK JP Regular:pixelsize=10"
+            , fontName            = "xft:Noto Sans Mono CJK JP:pixelsize=10"
             , decoHeight          = 16
             } 
 
@@ -174,7 +176,7 @@ myLayout = (avoidStruts . smartBorders) $
 -- | Conditionally run an action, using a 'X' event to decide
 -- | bind the result of dmenu and run the action on the result
 
-dmenuDo :: Map String a -> a -> (a -> X()) -> X()
+dmenuDo :: M.Map String a -> a -> (a -> X()) -> X()
 dmenuDo choices d action = (dmenuMap choices) >>=
     \choice -> case choice of
                     Just c -> action c
@@ -223,8 +225,21 @@ tagComplList = gets (concat . Prelude.map (integrate' . stack) . W.workspaces . 
     mapM getTags >>=
     return . nub . concat
 
+broadcastMessageX :: Message a => a -> X ()
+broadcastMessageX a = withWindowSet $ \ws -> do
+   let c = W.workspace . W.current $ ws
+       v = map W.workspace . W.visible $ ws
+       h = W.hidden ws
+   handle <- io $ openBinaryFile "/home/markw/xmonad-broadcasts" AppendMode ;
+   io $ hPrint handle $  map show (c : v ++ h) ;
+   io $ hClose handle ; 
+   mapM_ (sendMessageWithNoRefresh a) (c : v ++ h)
 
-main = do 
+-- | Update the layout field of a workspace
+updateLayoutX :: X ()
+updateLayoutX = runOnWorkspaces $ \ww -> return ww
+
+main = do
        hSetBinaryMode stdout True ;
        xmonad $ ewmh DeskConf.desktopConfig
             { X.workspaces = myWorkspaces
@@ -282,7 +297,7 @@ main = do
             , ((myMod .|. shiftMask, xK_o), do 
                 theme <- readTheme ;
                 spawn "toggle-color-scheme.sh" ;
-                (broadcastMessage . SetTheme) $ myDecoTheme (if (unpack (strip (pack theme))) == "solarized-dark" then "solarized-light" else "solarized-dark"))
+                (broadcastMessage . SetTheme) $ myDecoTheme (if (unpack (strip (pack theme))) == "solarized-dark" then "solarized-light" else "solarized-dark")) 
             , ((myMod, xK_d), spawn "todo")
             , ((myMod .|. shiftMask, xK_z), io $ exitWith ExitSuccess)
             , ((myMod, xK_t), spawn myTerm)
