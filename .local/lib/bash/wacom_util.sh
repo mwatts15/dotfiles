@@ -45,3 +45,23 @@ wacom_get_device_id () {
     die_if_program_doesnt_exist xsetwacom
     echo -n $(xsetwacom --list devices | grep $X | cut -f 2 | cut -d' ' -f 2 | head -n 1)
 }
+
+reset_keys () {
+    xsetwacom --set $(wacom_get_device_id PAD) Button 1 
+    xsetwacom --set $(wacom_get_device_id PAD) Button 2 
+    xsetwacom --set $(wacom_get_device_id PAD) Button 3
+    xsetwacom --set $(wacom_get_device_id PAD) Button 4 
+    xsetwacom --set $(wacom_get_device_id PAD) Button 5
+    xsetwacom --set $(wacom_get_device_id PAD) Button 8
+    xsetwacom --set $(wacom_get_device_id PAD) Button 9
+    xsetwacom --set $(wacom_get_device_id PAD) Button 10
+    xsetwacom --set $(wacom_get_device_id PAD) Button 11
+    xsetwacom --set $(wacom_get_device_id PAD) Button 12
+    xsetwacom --set $(wacom_get_device_id PAD) Button 13 
+}
+
+reset_buttons () {
+    xsetwacom --set $(wacom_get_device_id STYLUS) Button 1 
+    xsetwacom --set $(wacom_get_device_id STYLUS) Button 2 
+    xsetwacom --set $(wacom_get_device_id STYLUS) Button 3
+}
