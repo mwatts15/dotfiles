@@ -7,7 +7,7 @@ zstyle ':completion:*' group-name ''
 zstyle ':completion:*' insert-unambiguous true
 zstyle ':completion:*' max-errors 1
 zstyle ':completion:*' original true
-zstyle :compinstall filename '/home/twock/.zshrc'
+zstyle :compinstall filename '/home/markw/.zshrc'
 
 # VCS Info plugin configuration#
 zstyle ':vcs_info:*' enable git hg svn
@@ -114,7 +114,7 @@ $prompt_start%B%F{red}%!%f%b$prompt_end%# '
             print -nP "\e]$escape_num;%y: %1~: --\a"
             ;;
     esac
-    prompt_wd="%F{magenta}$(shorten_path.pl $PWD $PR_PWDLEN)%f"
+    prompt_wd="%F{magenta}$(shorten_path.pl $PWD $PR_PWDLEN|sed 's/%/%%/g')%f"
     pwd > $HOME/.last-directory
     . $HOME/.project_aliases
 }
@@ -281,7 +281,6 @@ function ctd ()
 
 export CVS_RSH=ssh
 export LD_LIBRARY_PATH=/usr/local/lib:/usr/lib
-CDPATH=.:$HOME
 if [ -f "$HOME/.zshrc.local" ] ; then
     source "$HOME/.zshrc.local"
 fi
