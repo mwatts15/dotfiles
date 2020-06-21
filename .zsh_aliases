@@ -31,12 +31,15 @@ alias gpu='git push -u origin'
 alias go='cd'
 alias grd='git rebase dev'
 alias grepl='grep --color=auto -n'
+alias grep='/bin/grep -I'
+alias grec='/bin/grep -r -I'
+alias greci='/bin/grep -r -i -I'
 alias gsh='git show'
 alias help=man
 alias ipy3=ipython3
 alias ipy=ipython
 alias kilall=killall
-alias l="ls --hide='*.pyc'"
+alias l="ls --hide='*.pyc' --hide='__pycache__'"
 alias ll='ls -l --time-style=full-iso'
 alias ls='/bin/ls --group-directories-first --color=auto -F'
 alias lstp='list_projects'
