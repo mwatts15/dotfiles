@@ -53,7 +53,6 @@ get_index _ [] = (- 1)
 get_index n xs = length (takeWhile (/= n) xs)
 
 myOldTags = ["1","2","3","4","5","6","7","8","9","0"]
---myTags = [[a] | a <- ['\9312'..'\9323']]
 myTags = ["1","2","3","4","5","6","7","8","9","0"]
 myNumbers = "一二三四五六七八九十"
 myWorkspaces = [[a] ++ ":" ++ b | (a, b) <- zip myNumbers myTags]
@@ -97,7 +96,7 @@ myPP lightOrDark = xmobarPP
     ,   ppWsSep   = "  "
     ,   ppHidden  = xmobarColor "gray50" "" 
     ,   ppHiddenNoWindows  = xmobarColor (if lightOrDark == "solarized-light" then "gray70" else "gray30") "" . ((:[]) . head)
-    ,   ppTitle   = xmobarColor "gray50" "" . shorten 55
+    ,   ppTitle   = xmobarColor "gray50" "" 
     ,   ppSep     = xmobarColor "#c0c0c0" "" " :: "
     }
 
