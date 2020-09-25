@@ -5,8 +5,8 @@ Config { font = "xft:Noto Sans Mono CJK JP:pixelsize=10"
        , fgColor = "#657b83"
        , position = BottomSize C 100 15
        , lowerOnStart = True
-       , commands = [ Run Network "wlan0" ["-w", "4", "-L","0","-H","32","--normal","green","--high","red", "-t", "D<rx> U<tx>"] 10
-                    , Run Wireless "wlan0" [] 6000
+       , commands = [ Run Network "wlp5s0" ["-w", "4", "-L","0","-H","32","--normal","green","--high","red", "-t", "D<rx> U<tx>"] 10
+                    , Run Wireless "wlp5s0" [] 6000
                     , Run DiskU [("/", "<used>/<size>")] [] 6000
                     , Run DiskIO [("/", "R <read> W <write>")] ["-w", "5"] 10
                     , Run PipeReader "/tmp/markw-xmms2-string-ipc-pipe" "xmms2_curr"
@@ -17,5 +17,5 @@ Config { font = "xft:Noto Sans Mono CJK JP:pixelsize=10"
                     ]
        , sepChar = "%"
        , alignSep = "}{"
-       , template = "%xmms2_curr%}%cpu% <fc=#c0c0c0>::</fc> %memory% %swap% <fc=#c0c0c0>::</fc> Net: %wlan0wi% <fc=#c0c0c0>(</fc>%wlan0%<fc=#c0c0c0>)</fc> <fc=#c0c0c0>::</fc> Disk: %disku% %diskio% {%xmobar_vol%"
+       , template = "%xmms2_curr%}%cpu% <fc=#c0c0c0>::</fc> %memory% %swap% <fc=#c0c0c0>::</fc> Net: %wlp5s0wi% <fc=#c0c0c0>(</fc>%wlp5s0%<fc=#c0c0c0>)</fc> <fc=#c0c0c0>::</fc> Disk: %disku% %diskio% {%xmobar_vol%"
        }
