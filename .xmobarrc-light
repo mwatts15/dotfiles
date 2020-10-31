@@ -1,4 +1,4 @@
-Config { font = "xft:Noto Sans Mono CJK JP:pixelsize=10"
+Config { font = "xft:Noto Sans Mono CJK JP:pixelsize=10,xft:Sans Mono:pixelsize=10"
        , borderColor = "black"
        , border = NoBorder
        , bgColor = "#fdf6e3"
@@ -14,8 +14,9 @@ Config { font = "xft:Noto Sans Mono CJK JP:pixelsize=10"
                     , Run Uptime [] 36000
                     , Run Kbd [("us(dvorak)", "DV"), ("us", "US")]
                     , Run PipeReader "/tmp/markw-battery-status-pipe" "battery"
+                    , Run PipeReader "/run/user/1000/xmobar-notifications-pipe" "notifications"
                     ]
        , sepChar = "%"
        , alignSep = "}{"
-       , template = "%StdinReader% }{%battery% <fc=#c0c0c0>::</fc> <fc=#c0c0c0>[</fc>%kbd%<fc=#c0c0c0>]</fc> <fc=#c0c0c0>::</fc> <fc=#8aadb9>%date%</fc> <fc=#c0c0c0>::</fc> %uptime%"
+       , template = "%StdinReader% }{%notifications% %battery% <fc=#c0c0c0>::</fc> <fc=#c0c0c0>[</fc>%kbd%<fc=#c0c0c0>]</fc> <fc=#c0c0c0>::</fc> <fc=#8aadb9>%date%</fc> <fc=#c0c0c0>::</fc> %uptime%"
        }
