@@ -1,4 +1,4 @@
-{-# LANGUAGE DeriveDataTypeable #-}
+{-# LANGUAGE DeriveDataTypeable, FlexibleContexts #-}
 import XMonad hiding ( (|||) )
 import qualified XMonad as X
 import Data.List (find, nub, intersperse, unlines)
@@ -20,6 +20,7 @@ import XMonad.Layout.Dishes
 import XMonad.Layout.TwoPane
 import XMonad.Layout.SubLayouts
 import XMonad.Layout.BoringWindows as BW hiding (focusMaster)
+import LayoutModifier
 --import XMonad.Layout.Tabbed
 import Tabbed
 import XMonad.Actions.WindowBringer hiding (actionMenu, menuArgs)
@@ -114,6 +115,12 @@ hide' (Just w) = hide w
 rotateWindows = modWindowStack listrotate
 rotateWindowsr = modWindowStack listrotater
 
+readThemeIO = do
+    handle <- openBinaryFile "/home/markw/.dynamic-colors/colorscheme" ReadMode ;
+    s <- hGetLine handle ;
+    hClose handle ;
+    return s
+
 readTheme = do
     handle <- io $ openBinaryFile "/home/markw/.dynamic-colors/colorscheme" ReadMode ;
     s <- io $ hGetLine handle ;
@@ -163,14 +170,18 @@ myDecoTheme theme =
             , decoHeight          = 16
             } 
 
-myTab = tabbed shrinkText $ myDecoTheme "solarized-light"
-myLayout = (avoidStruts . smartBorders) $ 
-           (tall ||| wide ||| tp ||| myTab)
-           where tall = (Tall 1 step ratio)
-                 wide = (Mirror (Tall 1 step ratio))
-                 tp = (TwoPane step ratio)
-                 ratio = (60/100)
-                 step  = (10/100)
+myTab theme = tabbed shrinkText $ myDecoTheme theme
+--myLayout :: ModifiedLayout AvoidStruts q a
+--myLayout = (avoidStruts . smartBorders) $ 
+           --(tall ||| wide ||| tp ||| myTab)
+           --where tall = (Tall 1 step ratio)
+                 --wide = (Mirror (Tall 1 step ratio))
+                 --tp = (TwoPane step ratio)
+                 --ratio = (60/100)
+                 --step  = (10/100)
+myLayout theme = myTab theme
+--myLayoutX :: (LayoutModifier m a, LayoutClass l a) => [Char] -> LayoutClass (ModifiedLayout m l) a
+myLayoutX theme = (avoidStruts . smartBorders) $ myTab theme
 
 -- | Conditionally run an action, using a 'X' event to decide
 -- | bind the result of dmenu and run the action on the result
@@ -224,22 +235,40 @@ tagComplList = gets (concat . Prelude.map (integrate' . stack) . W.workspaces . 
     mapM getTags >>=
     return . nub . concat
 
-broadcastMessageX :: Message a => a -> X ()
-broadcastMessageX a = withWindowSet $ \ws -> do
-   let c = W.workspace . W.current $ ws
-       v = map W.workspace . W.visible $ ws
-       h = W.hidden ws
-   handle <- io $ openBinaryFile "/home/markw/xmonad-broadcasts" AppendMode ;
-   io $ hPrint handle $  map show (c : v ++ h) ;
-   io $ hClose handle ; 
-   mapM_ (sendMessageWithNoRefresh a) (c : v ++ h)
-
 -- | Update the layout field of a workspace
 updateLayoutX :: X ()
 updateLayoutX = runOnWorkspaces $ \ww -> return ww
 
+myBroadcastMessage :: (Show a, Message a) => a -> X ()
+myBroadcastMessage a = withWindowSet $ \ws -> do
+   let c = W.workspace . W.current $ ws
+       v = map W.workspace . W.visible $ ws
+       h = W.hidden ws
+   x <- mapM (mySendMessageWithNoRefresh a) (c : v ++ h) ;
+   handle <- io $ openBinaryFile "/home/markw/xmonad-broadcasts" AppendMode ;
+   io $ hPrint handle $  (show . length) x ;
+   io $ hClose handle ;
+   --windows $ \x -> x
+   --where mlml (ModifiedLayout m l) = l
+         --mlml (Layout k) = Layout k
+
+mySendMessageWithNoRefresh :: (Show a, Message a) => a -> W.Workspace WorkspaceId (Layout Window) Window -> X ()
+mySendMessageWithNoRefresh a w = do
+   handle <- io $ openBinaryFile "/home/markw/xmonad-broadcasts" AppendMode ;
+   io $ hPutStrLn handle $ "activeColor = -----before: Message: " ++ (show (activeColor (theme a)));
+   io $ hPrint handle $ W.layout w ;
+   w0 <- handleMessage (W.layout w) (SomeMessage a) `catchX` (return $ Just (W.layout w)) ;
+   io $ hPutStrLn handle $ "activeColor = ----- after: Message: " ++ (show a);
+   io $ hPutStrLn handle $ spoop w0 ;
+   io $ hClose handle ;
+   updateLayout  (W.tag w) w0
+   where spoop (Just (Layout w)) = show w
+         spoop Nothing = "bupkiss"
+
+
 main = do
        hSetBinaryMode stdout True ;
+       theme <- readThemeIO ;
        xmonad $ ewmh DeskConf.desktopConfig
             { X.workspaces = myWorkspaces
             , borderWidth = 3
@@ -248,7 +277,7 @@ main = do
             , modMask = myMod -- Map to Windows key
             , manageHook = manage_hook <+> manageHook DeskConf.desktopConfig
             , terminal = myTerm
-            , layoutHook = myLayout
+            , layoutHook = (myLayoutX theme)
             , logHook = myLogHook
             , handleEventHook = handleEventHook DeskConf.desktopConfig <+> fullscreenEventHook
             }
@@ -296,7 +325,7 @@ main = do
             , ((myMod .|. shiftMask, xK_o), do 
                 theme <- readTheme ;
                 spawn "toggle-color-scheme.sh" ;
-                (broadcastMessage . SetTheme) $ myDecoTheme (if (unpack (strip (pack theme))) == "solarized-dark" then "solarized-light" else "solarized-dark")) 
+                (myBroadcastMessage . SetTheme) $ myDecoTheme (if (unpack (strip (pack theme))) == "solarized-dark" then "solarized-light" else "solarized-dark")) 
             , ((myMod, xK_d), spawn "todo")
             , ((myMod .|. shiftMask, xK_z), io $ exitWith ExitSuccess)
             , ((myMod, xK_t), spawn myTerm)
