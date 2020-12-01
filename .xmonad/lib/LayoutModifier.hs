@@ -267,18 +267,8 @@ instance (LayoutModifier m a, LayoutClass l a) => LayoutClass (ModifiedLayout m 
            mm' <- handleMessOrMaybeModifyIt m mess
            ml' <- case mm' of
                   Just (Right mess') -> do handleMessage l mess'
-                                           handle <- io $ IO.openBinaryFile "/home/markw/xmonad-layoutmodifier" IO.AppendMode ;
-                                           io $ IO.hPutStrLn handle "blah blah blah" ;
-                                           io $ IO.hClose handle ;
                                            return Nothing
-                  Nothing -> do handle <- io $ IO.openBinaryFile "/home/markw/xmonad-layoutmodifier" IO.AppendMode ;
-                                io $ IO.hPutStrLn handle "NOTHING NOTHING!" ;
-                                io $ IO.hClose handle ;
-                                return Nothing
                   _ -> do spats <- handleMessage l mess ;
-                          handle <- io $ IO.openBinaryFile "/home/markw/xmonad-layoutmodifier" IO.AppendMode ;
-                          io $ IO.hPrint handle spats ;
-                          io $ IO.hClose handle ;
                           return spats
            return $ case mm' of
                     Just (Left m') -> Just $ (ModifiedLayout m') $ maybe l id ml'

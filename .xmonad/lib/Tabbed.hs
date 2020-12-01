@@ -210,9 +210,6 @@ instance Eq a => DecorationStyle TabbedDecoration a where
     decorationEventHook _ _ _ = return ()
 
     decorate ds w h r s wrs wr = do
-        handle <- io $ IO.openBinaryFile "/home/markw/xmonad-decorate" IO.AppendMode ;
-        io $ IO.hPutStr handle $ "decorating...\n";
-        io $ IO.hClose handle ; 
         return $ pureDecoration ds w h r s wrs wr
 
     pureDecoration (Tabbed lc sh) wt ht _ s wrs (w,r@(Rectangle x y wh hh))

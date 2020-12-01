@@ -3,6 +3,7 @@ import XMonad hiding ( (|||) )
 import qualified XMonad as X
 import Data.List (find, nub, intersperse, unlines)
 import Data.Text (strip, pack, unpack) 
+import Data.Char (toLower) 
 
 import qualified Data.Map as M
 import System.Exit
@@ -23,7 +24,7 @@ import XMonad.Layout.BoringWindows as BW hiding (focusMaster)
 import LayoutModifier
 --import XMonad.Layout.Tabbed
 import Tabbed
-import XMonad.Actions.WindowBringer hiding (actionMenu, menuArgs)
+import XMonad.Actions.WindowBringer hiding (actionMenu)
 import Decoration( DecorationMsg( SetTheme ) )
 
 import XMonad.Layout.WindowNavigation
@@ -34,9 +35,10 @@ import XMonad.Actions.UpdatePointer (updatePointer)
 import XMonad.Actions.CycleWS
 import XMonad.Hooks.ManageHelpers
 import XMonad.Util.Run(spawnPipe)
-import XMonad.Util.Dmenu
+import XMonad.Util.Dmenu hiding (menuArgs)
 import XMonad.Util.WindowProperties
 import XMonad.Util.Themes
+import qualified XMonad.Util.NamedWindows as NW
 import Control.Monad (liftM2,liftM)
 import XMonad.StackSet hiding (focus)
 import qualified XMonad.StackSet as W
@@ -179,18 +181,6 @@ myLayout = (avoidStruts . smartBorders) $
                  tp = (TwoPane step ratio)
                  ratio = (60/100)
                  step  = (10/100)
---myLayoutX theme = myTab theme
---myLayoutX :: (LayoutModifier m a, LayoutClass l a) => [Char] -> LayoutClass (ModifiedLayout m l) a
---myLayoutX theme = (avoidStruts . smartBorders) $ myTab theme
-
--- | Conditionally run an action, using a 'X' event to decide
--- | bind the result of dmenu and run the action on the result
-
-dmenuDo :: M.Map String a -> a -> (a -> X()) -> X()
-dmenuDo choices d action = (dmenuMap choices) >>=
-    \choice -> case choice of
-                    Just c -> action c
-                    Nothing -> action d
 
 gotoWorkspace w = do s <- gets windowset
                      if tagMember w s
@@ -206,38 +196,22 @@ actionMenu :: String -> [String] -> (Window -> X.WindowSet -> X.WindowSet) -> X 
 actionMenu menuCmd menuArgs action = windowMap >>= menuMapFunction >>= flip X.whenJust (windows . action)
     where
       menuMapFunction :: M.Map String a -> X (Maybe a)
-      menuMapFunction selectionMap = menuMapArgs menuCmd menuArgs selectionMap
+      menuMapFunction selectionMap = menuMapArgs menuCmd menuArgs (M.mapKeys (map toLower) selectionMap)
 
 copyWindowToCurrentWS w ws = copyWindow w (W.currentTag ws) ws
 
+windowLabelToMenuItem :: X.WindowSpace -> Window -> X String
+windowLabelToMenuItem ws w = do
+  name <- show <$> NW.getName w
+  return $ (map toLower name) ++ " [" ++ W.tag ws ++ "]"
+
+myWBConfig = WindowBringerConfig{ menuCommand = "my_dmenu"
+                                , menuArgs = ["-b"]
+                                , windowTitler = windowLabelToMenuItem
+                                }
+
 copyMenuArgs' :: String -> [String] -> X ()
 copyMenuArgs' menuCmd menuArgs = actionMenu menuCmd menuArgs copyWindowToCurrentWS
-
-tagMenuArgs' :: String -> [String] -> X ()
-tagMenuArgs' cmd args = tagComplList >>= menuArgs cmd args >>= (withFocused . addTag)
-
-gotoTaggedMenu :: X ()
-gotoTaggedMenu = tagComplList >>= (menuArgs "my_dmenu" ["-b"]) >>= focusUpTaggedGlobal
-
-bringTaggedMenu :: X ()
-bringTaggedMenu = tagComplList >>= (menuArgs "my_dmenu" ["-b"]) >>= (\s -> withTaggedGlobalP s shiftHere)
-
-untagMenuArgs' :: String -> [String] -> X ()
-untagMenuArgs' cmd args = tagDelComplList >>= menuArgs cmd args >>= (withFocused . delTag)
-
-tagDelComplList :: X [String]
-tagDelComplList = gets windowset >>= maybe (return []) getTags . peek
-
--- Copied (almost) verbatim from XMonad.Actions.TagWindows...they don't export
--- it for some reason
-tagComplList :: X [String]
-tagComplList = gets (concat . Prelude.map (integrate' . stack) . W.workspaces . windowset) >>=
-    mapM getTags >>=
-    return . nub . concat
-
--- | Update the layout field of a workspace
-updateLayoutX :: X ()
-updateLayoutX = runOnWorkspaces $ \ww -> return ww
 
 myBroadcastMessage :: (Show a, Message a) => a -> X ()
 myBroadcastMessage a = withWindowSet $ \ws -> do
@@ -317,8 +291,8 @@ main = do
             , ((myMod, xK_b), sendMessage $ ToggleStrut D)
             , ((myMod .|. shiftMask, xK_b), sendMessage ToggleStruts)
             , ((myMod .|. shiftMask, xK_slash), withFocused $ windows . W.sink)
-            , ((myMod, xK_n), gotoMenuArgs' "my_dmenu" ["-b"])
-            , ((myMod .|. shiftMask, xK_n), bringMenuArgs' "my_dmenu" ["-b"])
+            , ((myMod, xK_n), gotoMenuConfig myWBConfig)
+            , ((myMod .|. shiftMask, xK_n), bringMenuConfig myWBConfig )
             , ((myMod .|. shiftMask .|. controlMask, xK_n), copyMenuArgs' "my_dmenu" ["-b"])
             , ((myMod, xK_space), spawn "dmenu_run_plus -i -p Run -fn 'Noto Sans Mono CJK JP Regular':pixelsize=10 -lh 19")
             , ((myMod, xK_Down), BW.focusDown)
@@ -332,10 +306,6 @@ main = do
             , ((myMod .|. shiftMask, xK_Right), shiftToNext >> nextWS)
             , ((myMod .|. shiftMask, xK_Left),   shiftToPrev >> prevWS)
             , ((myMod, xK_x), toggleWS)
-            , ((myMod, xK_g), tagMenuArgs' "my_dmenu" ["-b"])
-            , ((myMod .|. shiftMask,   xK_g  ), untagMenuArgs' "my_dmenu" ["-b"])
-            , ((myMod,                xK_f ), gotoTaggedMenu)
-            , ((myMod .|. shiftMask,  xK_f ), bringTaggedMenu)
             ] 
             ++ 
             zip (zip (repeat (myMod)) ([xK_1..xK_9]++[xK_0])) (Prelude.map gotoWorkspace myWorkspaces)

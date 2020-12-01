@@ -290,9 +290,6 @@ instance (DecorationStyle ds Window, Shrinker s) => LayoutModifier (Decoration d
         | Just Hide             <- fromMessage m = do hideDecos (map snd dwrs)
                                                       return Nothing
         | Just (SetTheme nt)    <- fromMessage m = do releaseResources s
-                                                      handle <- io $ IO.openBinaryFile "/home/markw/decoration-handleMess" IO.AppendMode ;
-                                                      io $ IO.hPutStr handle $ "Setting theme " ++ (show nt) ++ "\n";
-                                                      io $ IO.hClose handle ; 
                                                       return $ Just $ Decoration (I Nothing) sh nt ds
         | Just ReleaseResources <- fromMessage m = do releaseResources s
                                                       return $ Just $ Decoration (I Nothing) sh t  ds
