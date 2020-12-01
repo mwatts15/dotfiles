@@ -1,4 +1,4 @@
-Config { font = "xft:Noto Sans Mono CJK JP:pixelsize=10,xft:Sans Mono:pixelsize=10"
+Config { font = "xft:Noto Sans Mono CJK JP:pixelsize=10,Noto Color Emoji:pixelsize=10,Sans Mono:pixelsize=10"
        , borderColor = "black"
        , border = NoBorder
        , bgColor = "#002b36"
