@@ -54,12 +54,15 @@ map-wacom-on-connect &
 set-wacom-keys-on-connect &
 # pretty notifications
 #twmnd &
+nohup battery_status.sh & 
 
 WMNAME=xmonad
 
 PATH=$PATH:$HOME/.cabal/bin
 (sleep 2 && xmobar .xmobarrc_) &
 xmobar_vol.sh Master &
+xmms2-string.rb &
+xmonoti &
 
 OUT="/tmp/${USER}-dynamic-log-pipe"
 mkfifo -m 0700 "$OUT" || echo "couldn't make the pipe!" >&2
