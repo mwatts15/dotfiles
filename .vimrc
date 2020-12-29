@@ -133,6 +133,8 @@ let g:netrw_banner = 0
 let g:netrw_fastbrowse = 2
 
 
+set bdir=~/.vimbackup//,.
+set dir=~/.vimbackup//,.
 set linebreak
 set display+=lastline
 "{{{Key mappings
@@ -233,7 +235,7 @@ endfunction
 set pastetoggle=<F12>           " pastetoggle (sane indentation on pastes)
 
 " Remove trailing whitespaces and ^M chars
-autocmd FileType perl,c,cpp,java,php,javascript,ruby,python,twig,xml,yml,groovy autocmd BufWritePre <buffer> :call setline(1,map(getline(1,"$"),'substitute(v:val,"\\s\\+$","","")'))
+autocmd FileType perl,c,cpp,java,php,javascript,ruby,python,twig,xml,yaml,groovy autocmd BufWritePre <buffer> :call setline(1,map(getline(1,"$"),'substitute(v:val,"\\s\\+$","","")'))
 
 autocmd! BufWritePost *.rst silent ! rst2html <afile> 2>/dev/null > rst_out.html
 autocmd FileType rst,markdown set spell
