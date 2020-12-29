@@ -8,6 +8,7 @@ alias dk='docker kill'
 alias dps='docker ps'
 alias dpsa='docker ps -a'
 alias drm='docker rm'
+alias drmi='docker rmi'
 alias dr='docker run --rm'
 alias dins='docker inspect'
 alias dis='docker images'
@@ -57,12 +58,12 @@ alias xsetkbmap=setxkbmap
 alias ↑=up
 
 vfn () {
-    opts=$(find -name $1)
     IFS=$'\n'
-    select opt in "$opts" ; do
+    select opt in $(find -name $1) ; do
         if [ $opt ] ; then
             echo $EDITOR $opt 
             $EDITOR $opt 
+            break
         else
             break
         fi
@@ -79,14 +80,5 @@ alias gcm='git commit -m'
 alias mci='mvn clean install'
 alias mi='mvn install'
 alias mc='mvn clean'
-
-pt ()
-{
-    if [ "$*" ] ; then
-        python setup.py test --addopts "$*"
-    else
-        python setup.py test
-    fi
-}
-
+alias pt=pytest 
 alias dpth='echo $SHLVL'
