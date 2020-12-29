@@ -206,7 +206,7 @@ windowLabelToMenuItem ws w = do
   return $ (map toLower name) ++ " [" ++ W.tag ws ++ "]"
 
 myWBConfig = WindowBringerConfig{ menuCommand = "my_dmenu"
-                                , menuArgs = ["-b"]
+                                , menuArgs = ["-b", "-i"]
                                 , windowTitler = windowLabelToMenuItem
                                 }
 
@@ -293,7 +293,7 @@ main = do
             , ((myMod .|. shiftMask, xK_slash), withFocused $ windows . W.sink)
             , ((myMod, xK_n), gotoMenuConfig myWBConfig)
             , ((myMod .|. shiftMask, xK_n), bringMenuConfig myWBConfig )
-            , ((myMod .|. shiftMask .|. controlMask, xK_n), copyMenuArgs' "my_dmenu" ["-b"])
+            , ((myMod .|. shiftMask .|. controlMask, xK_n), copyMenuArgs' "my_dmenu" ["-b", "-i"])
             , ((myMod, xK_space), spawn "dmenu_run_plus -i -p Run -fn 'Noto Sans Mono CJK JP Regular':pixelsize=10 -lh 19")
             , ((myMod, xK_Down), BW.focusDown)
             , ((myMod, xK_Up), BW.focusUp)
