@@ -9,7 +9,7 @@ Config { font = "xft:Noto Sans Mono CJK JP:pixelsize=10,Noto Color Emoji:pixelsi
        , commands = [ Run Com "uname" ["-s","-r"] "" 0
                     , Run Com "hostname" ["-f"] "" 36000
                     , Run Com "whoami" [] "user" 0
-                    , Run StdinReader
+                    , Run XMonadLog
                     , Run Date "%a %_d %b %Y %H:%M:%S" "date" 10
                     , Run Uptime [] 36000
                     , Run Kbd [("us(dvorak)", "DV"), ("us", "US")]
@@ -18,5 +18,5 @@ Config { font = "xft:Noto Sans Mono CJK JP:pixelsize=10,Noto Color Emoji:pixelsi
                     ]
        , sepChar = "%"
        , alignSep = "}{"
-       , template = "%StdinReader% }{%notifications% %battery% <fc=#c0c0c0>::</fc> <fc=#c0c0c0>[</fc>%kbd%<fc=#c0c0c0>]</fc> <fc=#c0c0c0>::</fc> <fc=#8aadb9>%date%</fc> <fc=#c0c0c0>::</fc> %uptime%"
+       , template = "%XMonadLog% }{%notifications% %battery% <fc=#c0c0c0>::</fc> <fc=#c0c0c0>[</fc>%kbd%<fc=#c0c0c0>]</fc> <fc=#c0c0c0>::</fc> <fc=#8aadb9>%date%</fc> <fc=#c0c0c0>::</fc> %uptime%"
        }

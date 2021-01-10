@@ -90,7 +90,6 @@ doSink = ask >>= \w -> liftX (reveal w) >> doF (W.sink w)
 --manage_hook = transience . manageHook
 
 myMod = mod4Mask
-myBar = "xmobar"
 
 myPP lightOrDark = xmobarPP 
     {   ppCurrent = xmobarColor "#268bd2" ""
@@ -131,7 +130,7 @@ readTheme = do
 
 myLogHook = do 
     s <- readTheme ;
-    dynamicLogWithPP (myPP s)
+    dynamicLogString (myPP s) >>= xmonadPropLog 
               >> updatePointer (0.5, 0.5) (0, 0)
 
 focusSideStack stack = focusWindow (head $ tail $ W.index stack) stack
