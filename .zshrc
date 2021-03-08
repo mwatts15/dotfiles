@@ -53,6 +53,9 @@ MPROJ_NBACKUPS=4
 promptinit
 compinit
 
+# A PATH-like variable with paths where we should skip doing diff on every precmd
+typeset -TUx ZSH_PRECMD_SKIP_GIT_DIFF zsh_precmd_skip_git_diff
+
 precmd()
 {
     vcs_info
@@ -70,21 +73,29 @@ precmd()
         local STAGED_CHANGES
         local CHANGES
 
-        UNSTAGED_CHANGES=0
-        STAGED_CHANGES=0
-        UNSTAGED_CHANGES=$(git diff --numstat | wc -l)
-        STAGED_CHANGES=$(git diff --numstat --staged | wc -l)
-
         CHANGES=
-        if [ $((STAGED_CHANGES + UNSTAGED_CHANGES)) -gt 0 ] ; then
-            CHANGES='|'
-        fi
+        skip=
+        for (( i = 1; i <= $#zsh_precmd_skip_git_diff; i++ )) do
+            if [[ $PWD =~ "${zsh_precmd_skip_git_diff[i]}/*" ]] ; then
+                skip=1
+            fi
+        done
 
-        if [ $STAGED_CHANGES -ne 0 ] ; then 
-            CHANGES=$CHANGES●$STAGED_CHANGES
-        fi
-        if [ $UNSTAGED_CHANGES -ne 0 ] ; then 
-            CHANGES=$CHANGES✚$UNSTAGED_CHANGES
+        if [ -z "$skip" ] ; then
+            UNSTAGED_CHANGES=0
+            STAGED_CHANGES=0
+            UNSTAGED_CHANGES=$(git diff --numstat | wc -l)
+            STAGED_CHANGES=$(git diff --numstat --staged | wc -l)
+            if [ $((STAGED_CHANGES + UNSTAGED_CHANGES)) -gt 0 ] ; then
+                CHANGES='|'
+            fi
+
+            if [ $STAGED_CHANGES -ne 0 ] ; then 
+                CHANGES=$CHANGES●$STAGED_CHANGES
+            fi
+            if [ $UNSTAGED_CHANGES -ne 0 ] ; then 
+                CHANGES=$CHANGES✚$UNSTAGED_CHANGES
+            fi
         fi
         prompt_vcs="${prompt_start}${vcs_info_msg_0_}$CHANGES${prompt_end}"
     else

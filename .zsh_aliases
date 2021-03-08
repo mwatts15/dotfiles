@@ -4,6 +4,7 @@ alias bc='bc -il ~/.bc/*.bc'
 alias cd-='cd -'
 alias cl='clisp -repl ~/.cl/*.cl'
 alias dl='docker logs'
+alias dexc='docker exec -it'
 alias dk='docker kill'
 alias dps='docker ps'
 alias dpsa='docker ps -a'
@@ -56,18 +57,41 @@ alias xclip="xclip -sel clipboard"
 alias xlock='xscreensaver-command --lock'
 alias xsetkbmap=setxkbmap
 alias ↑=up
+alias gpdn='zsh_precmd_skip_git_diff+=$(findgit)'
+
+gpdy () {
+    gitdir="$(findgit)"
+    zsh_precmd_skip_git_diff[$zsh_precmd_skip_git_diff[(i)$gitdir]]=()
+}
+
+findgit () {
+    local levels=1
+    dir="$PWD"
+    while [ "/" != "$dir" ] ; do
+        if [ -d "$dir/.git" ] ; then
+            echo "$dir"
+            return
+        fi
+        dir=${dir%/*}
+    done
+}
 
 vfn () {
-    IFS=$'\n'
-    select opt in $(find -name $1) ; do
-        if [ $opt ] ; then
-            echo $EDITOR $opt 
-            $EDITOR $opt 
-            break
-        else
-            break
-        fi
-    done
+    opts="$(find -name $1)"
+    if [ "$(echo "$opts" | wc -l)" -eq 1 ] ; then
+        $EDITOR "$opts"
+    else
+        IFS=$'\n'
+        select opt in $(echo "${opts}") ; do
+            if [ $opt ] ; then
+                echo $EDITOR $opt
+                $EDITOR $opt
+                break
+            else
+                break
+            fi
+        done
+    fi
 }
 
 alias gst='git status'
@@ -82,3 +106,6 @@ alias mi='mvn install'
 alias mc='mvn clean'
 alias pt=pytest 
 alias dpth='echo $SHLVL'
+showcert () {
+    openssl x509 -in "$1" -text
+}
