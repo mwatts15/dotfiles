@@ -98,6 +98,8 @@ let g:auto_save_events = ['CursorHold', 'TextChanged', 'InsertLeave']
 let g:auto_save_presave_hook = 'call Backup()'
 let g:auto_save_silent = 1
 
+let g:tar_secure = 1
+
 function! Backup()
     "let fileName = expand("%")
     "call system('cp ' . fileName . ' ' . fileName . '.' . localtime())
@@ -236,6 +238,10 @@ set pastetoggle=<F12>           " pastetoggle (sane indentation on pastes)
 
 " Remove trailing whitespaces and ^M chars
 autocmd FileType perl,c,cpp,java,php,javascript,ruby,python,twig,xml,yaml,groovy autocmd BufWritePre <buffer> :call setline(1,map(getline(1,"$"),'substitute(v:val,"\\s\\+$","","")'))
+autocmd BufFilePost tarfile::* set ro
+autocmd BufFilePost tarfile::*/* set ro
+autocmd BufFilePost zipfile::* set ro
+autocmd BufFilePost zipfile::*/* set ro
 
 autocmd! BufWritePost *.rst silent ! rst2html <afile> 2>/dev/null > rst_out.html
 autocmd FileType rst,markdown set spell
