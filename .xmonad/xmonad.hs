@@ -39,6 +39,7 @@ import XMonad.Util.Dmenu hiding (menuArgs)
 import XMonad.Util.WindowProperties
 import XMonad.Util.Themes
 import qualified XMonad.Util.NamedWindows as NW
+import qualified XMonad.Util.ExtensibleState as XS
 import Control.Monad (liftM2,liftM)
 import XMonad.StackSet hiding (focus)
 import qualified XMonad.StackSet as W
@@ -50,6 +51,7 @@ import XMonad.Prompt.Window
 import XMonad.Actions.CopyWindow(copyWindow, kill1)
 
 import XMonad.Actions.TagWindows
+import Text.Printf
 
 get_index :: (Eq a) => a -> [a] -> Int
 get_index _ [] = (- 1)
@@ -128,10 +130,25 @@ readTheme = do
     io $ hClose handle ;
     return s
 
+newtype ScreenStorage = ScreenStorage { lastScreen :: String } deriving (Read,Show,Typeable)
+instance ExtensionClass ScreenStorage where
+    initialValue = ScreenStorage ""
+
 myLogHook = do 
     s <- readTheme ;
+    mapWacom ;
     dynamicLogString (myPP s) >>= xmonadPropLog 
               >> updatePointer (0.5, 0.5) (0, 0)
+
+-- | Map the Wacom stylus and eraser to the current screen using map-wacom
+mapWacom = do
+    last_screen <- XS.gets lastScreen ;
+    ws <- gets windowset ;
+    let sd = screenDetail $ W.current ws ;
+        sr = screenRect sd ;
+        sf = printf "%dx%d+%d+%d" (rect_width sr) (rect_height sr) (rect_x sr) (rect_y sr) 
+    XS.put $ ScreenStorage $ sf ;
+    if last_screen /= sf then spawn $ "map-wacom '" ++ sf ++ "'"  else return () ;
 
 focusSideStack stack = focusWindow (head $ tail $ W.index stack) stack
 
