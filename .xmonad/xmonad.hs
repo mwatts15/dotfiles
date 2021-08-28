@@ -30,6 +30,7 @@ import Decoration( DecorationMsg( SetTheme ) )
 import XMonad.Layout.WindowNavigation
 import XMonad.Hooks.ManageDocks
 import XMonad.Hooks.DynamicLog
+import qualified XMonad.Hooks.WorkspaceHistory as WH
 import XMonad.Actions.FindEmptyWorkspace
 import XMonad.Actions.UpdatePointer (updatePointer)
 import XMonad.Actions.CycleWS
@@ -77,7 +78,6 @@ myScreens = [('\'', 1), (',', 0),
 manage_hook = composeAll
     [ title =? "irssi" --> doShift (get_ws "3")
     , className =? "xmessage" --> doFloat
-    , resource =? "gimp" --> doSink
     , className =? "sun-awt-X11-XFramePeer" --> doFloat
     , className =? "Zenity" --> doFloat
     , className =? "arduino" --> doFloat
@@ -136,6 +136,7 @@ instance ExtensionClass ScreenStorage where
 
 myLogHook = do 
     s <- readTheme ;
+    WH.workspaceHistoryHook ;
     mapWacom ;
     dynamicLogString (myPP s) >>= xmonadPropLog 
               >> updatePointer (0.5, 0.5) (0, 0)
@@ -241,6 +242,24 @@ mySendMessageWithNoRefresh a w = do
    w0 <- handleMessage (W.layout w) (SomeMessage a) `catchX` (return $ Just (W.layout w)) ;
    updateLayout  (W.tag w) w0
 
+-- | Toggle to the previous workspace while excluding some workspaces.
+--
+-- > -- Ignore the scratchpad workspace while toggling:
+-- > ("M-b", toggleWS' ["NSP"])
+myToggleWS :: X ()
+myToggleWS = lastViewed >>= flip whenJust (windows . greedyView)
+
+-- | Ignoring the skips, find the best candidate for the last viewed hidden
+-- workspace.
+lastViewed :: X (Maybe WorkspaceId)
+lastViewed = do
+    wh <- WH.workspaceHistory
+    return (choose wh)
+    where
+      choose [] = Nothing
+      choose (h:[]) = Nothing
+      choose (h:m:r) = Just m
+
 
 main = do
        hSetBinaryMode stdout True ;
@@ -321,7 +340,7 @@ main = do
             , ((myMod,               xK_Left),    prevWS)
             , ((myMod .|. shiftMask, xK_Right), shiftToNext >> nextWS)
             , ((myMod .|. shiftMask, xK_Left),   shiftToPrev >> prevWS)
-            , ((myMod, xK_x), toggleWS)
+            , ((myMod, xK_x), myToggleWS)
             ] 
             ++ 
             zip (zip (repeat (myMod)) ([xK_1..xK_9]++[xK_0])) (Prelude.map gotoWorkspace myWorkspaces)
